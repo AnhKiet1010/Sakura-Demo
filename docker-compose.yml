@@ -1,0 +1,51 @@
+version: "3"
+services:
+  react-app:
+    stdin_open: true
+    tty: true
+    container_name: sakura-client
+    image: anhkiet/sakura-client:latest
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    ports: 
+      - "3000:3000"
+    networks:
+      - sakura-app
+    volumes:    
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - sakura-server
+  sakura-server:
+    container_name: sakura-server
+    image: anhkiet/sakura-server:latest
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - sakura-app
+    depends_on:
+      - mongo
+  mongo:
+    container_name: mongodb
+    image: mongo:4.4.4
+    ports:
+      - "27017:27017"
+    env_file:
+      - ./env/mongo.env
+    networks:
+      - sakura-app
+    volumes:
+      - ./data/mongo:/data/db
+networks:
+  sakura-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
