@@ -19,10 +19,10 @@ function SelfImgMess({ images, seen, time }) {
                     {
                         images.map((img, i) => {
                             return <Popup key={i} modal trigger={
-                                <li className="xl:w-1/4 px-4 mb-1" key={i}>
-                                    <div className="overflow-hidden rounded h-72 shadow-md cursor-pointer">
+                                <li className="md:w-1/4 px-4 mb-1" key={i}>
+                                    <div className="overflow-hidden rounded w-full shadow-md cursor-pointer">
                                         <img alt="upload preview" src={img}
-                                            className="rounded shadow-md h-full object-cover transform transition duration-500 hover:scale-110" />
+                                            className="rounded shadow-md h-full w-full object-cover transform transition duration-500 hover:scale-110" />
                                     </div>
                                 </li>
                             }>

@@ -1,8 +1,8 @@
 
 
-function ImageTempl({ filename, id, data, content }) {
+function ImageTempl({ filename, id, data, content, deleteClick }) {
     return (
-        <li className="block p-1 w-1/4" id={id}>
+        <li className="block p-1 w-1/4">
             <article tabIndex="0"
                 className="group hasImage w-full h-full rounded-md focus:outline-none focus:shadow-outline bg-gray-100 cursor-pointer relative text-transparent hover:text-white shadow-sm">
                 <img alt="upload preview" src={data}
@@ -25,7 +25,7 @@ function ImageTempl({ filename, id, data, content }) {
 
                         <p className="p-1 size text-xs">{content}</p>
                         <button
-                            className="delete ml-auto focus:outline-none hover:bg-gray-300 p-1 rounded-md" data={data}>
+                            className="delete ml-auto focus:outline-none hover:bg-gray-300 p-1 rounded-md" onClick={() => deleteClick(id)}>
                             <svg className="pointer-events-none fill-current w-4 h-4 ml-auto"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24">

@@ -5,7 +5,7 @@ import ImageTempl from './ImageTempl';
 import FileTempl from './FileTempl';
 
 
-function UploadPopup({ close, onSubmit, currentUser }) {
+function UploadPopup({ close, currentUser }) {
     const [gallery, setGallery] = useState([]);
     const [files, setFiles] = useState({});
     const [loading, setLoading] = useState(false);
@@ -38,7 +38,6 @@ function UploadPopup({ close, onSubmit, currentUser }) {
         const clone = {
             type: isImage ? 'image' : isVideo ? 'video' : 'file',
             filename: file.name,
-            id: objectURL,
             data: objectURL,
             content: `${file.size > 1024
                 ? file.size > 1048576
@@ -63,7 +62,6 @@ function UploadPopup({ close, onSubmit, currentUser }) {
             newGallery.push(addFile(file));
         }
         setGallery([...newGallery]);
-        console.log('gallery', gallery);
     };
 
 
@@ -72,6 +70,10 @@ function UploadPopup({ close, onSubmit, currentUser }) {
         console.log('gallery', gallery);
     };
 
+    const handleFileDeleteClick = (index) => {
+        console.log("Clicked", index);
+        setGallery([...gallery.slice(0,index), ...gallery.slice(index+1)]);
+    }
 
     return (
         <div className="-mx-3 bg-primary text-primary p-5 flex flex-col">
@@ -116,9 +118,9 @@ function UploadPopup({ close, onSubmit, currentUser }) {
                                 </li> :
                                     gallery.map((file, i) => {
                                         if (file.type === 'image') {
-                                            return <ImageTempl filename={file.filename} id={file.id} data={file.data} content={file.content} key={i} />
+                                            return <ImageTempl filename={file.filename} deleteClick={handleFileDeleteClick} data={file.data} content={file.content} key={i} id={i} />
                                         } else {
-                                            return <FileTempl filename={file.filename} id={file.id} data={file.data} content={file.content} key={i} />
+                                            return <FileTempl filename={file.filename} deleteClick={handleFileDeleteClick} data={file.data} content={file.content} key={i} id={i} />
                                         }
                                     })
                             }

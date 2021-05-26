@@ -7,7 +7,7 @@ function AudioMess({ src, avatar, seen, time }) {
 
     return (
         <div className="flex justify-start items-start text-sm mb-3">
-            <img src={avatar} className="w-10 h-10 rounded mr-3" alt="avatar" />
+            <img src={avatar} className="w-10 h-10 rounded-full mr-3" alt="avatar" />
             <div className="flex items-end">
                 <audio controls title="Advertisement"
                     webkit-playsinline="true"

@@ -1,6 +1,6 @@
 
 
-function FileTempl({ filename, id, data, content }) {
+function FileTempl({ filename, id, data, content, deleteClick }) {
     return (
         <li className="block p-1 w-full" id={id}>
             <article tabIndex="0"
@@ -25,7 +25,7 @@ function FileTempl({ filename, id, data, content }) {
 
                         <p className="p-1 size text-xs">{content}</p>
                         <button
-                            className="delete ml-auto focus:outline-none hover:bg-gray-300 p-1 rounded-md" data={data}>
+                            className="delete ml-auto focus:outline-none hover:bg-gray-300 p-1 rounded-md" onClick={() => deleteClick(id)}>
                             <svg className="pointer-events-none fill-current w-4 h-4 ml-auto"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24">

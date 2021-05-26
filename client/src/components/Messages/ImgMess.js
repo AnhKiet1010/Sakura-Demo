@@ -8,7 +8,7 @@ function SelfImgMess({ images, seen, time, avatar }) {
         <>
 
             <div className="flex justify-start items-start text-sm">
-                <img src={avatar} className="w-10 h-10 rounded mr-3" alt="avatar" />
+                <img src={avatar} className="w-10 h-10 rounded-full mr-3" alt="avatar" />
                 <div>
                     <ul className="flex flex-wrap -mx-4 mb-1">
                         {

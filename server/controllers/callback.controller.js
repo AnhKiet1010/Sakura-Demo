@@ -8,7 +8,6 @@ const jwt = require('jsonwebtoken');
 const LINE = require('../LINE-api/API');
 const { cloudUploadAudio, cloudUploadImage } = require('../middlewares/cloudinary');
 const fs = require('fs');
-const Jimp = require("jimp");
 const Path = require('path');
 
 
@@ -214,7 +213,7 @@ async function handleEvent(event, io) {
             const message = new Message({
                 fromId: event.source.userId,
                 toId: 'channel',
-                type: 'file',
+                type: 'image',
                 content: "",
                 images,
                 contentId: event.message.id,

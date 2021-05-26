@@ -32,6 +32,7 @@ io.on("connection", async socket => {
     hello(socket);
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
+    socket.on("SearchMess", data => console.log(data));
 });
 
 app.set("io", io);
