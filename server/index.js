@@ -25,14 +25,14 @@ const connectDB = require("./config/db");
 // Connect to database
 connectDB();
 
-const { hello, channelSendMess } = require("./controllers/socket.controller");
+const { channelSendMess, searchMess } = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
     // show connect id in server
-    hello(socket);
+    console.log('NEW CONNECTION : ', socket.id);
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
-    socket.on("SearchMess", data => console.log(data));
+    socket.on("SearchMess", data => searchMess(data, socket));
 });
 
 app.set("io", io);

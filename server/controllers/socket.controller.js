@@ -5,12 +5,6 @@ const Message = require('../models/message.model');
 const { client } = require('../config/lineClient');
 const moment = require("moment");
 
-
-
-exports.hello = (socket) => {
-    console.log("ID connected : ", socket.id);
-}
-
 exports.channelSendMess = async (data, socket) => {
     const { toId, content, type } = data;
 
@@ -51,4 +45,23 @@ exports.channelSendMess = async (data, socket) => {
     } catch (err) {
         console.log(err);
     }
+}
+
+
+exports.searchMess = async (data, socket) => {
+    console.log('data', data);
+
+    var dataIndex = 0;
+    var dataIndexArr = [];
+    const listMess = await Message.find({}, { "content": 1 }).sort({ _id: -1 }).exec();
+
+    listMess.forEach(function (mess) {
+        dataIndex++;
+        if (mess.content.includes(data)) {
+            dataIndexArr.push(dataIndex);
+        }
+    });
+
+    console.log('dataIndexArr', dataIndexArr);
+    socket.emit('OnChangeListMessBySearch', { listIndex: dataIndexArr });
 }

@@ -21,7 +21,7 @@ function TypeText({ avatar, seen, time, text, word }) {
             <div className="flex items-end">
                 <p className="text-gray-800 leading-normal bg-gray-300 rounded-lg px-4 py-3 m-0 max-w-lg">
                     <Highlighter
-                        highlightClassName="YourHighlightClass"
+                        highlightClassName="YourHighlightClass animate-pulse"
                         searchWords={arr}
                         autoEscape={true}
                         textToHighlight={content}

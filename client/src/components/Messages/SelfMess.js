@@ -20,7 +20,7 @@ function Self({ text, seen, time, word }) {
         <div className="flex flex-row-reverse justify-start items-end mb-4 text-sm">
             <p className="text-gray-800 leading-normal bg-green-200 rounded-lg px-4 py-3 m-0 max-w-lg">
                 <Highlighter
-                    highlightClassName="YourHighlightClass"
+                    highlightClassName="YourHighlightClass animate-pulse"
                     searchWords={arr}
                     autoEscape={true}
                     textToHighlight={content}

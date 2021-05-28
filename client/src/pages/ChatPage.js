@@ -1,67 +1,91 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useSelector } from 'react-redux';
 import TextareaAutosize from 'react-textarea-autosize';
-import InfiniteScroll from "react-infinite-scroll-component";
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from "reactjs-popup";
 import 'reactjs-popup/dist/index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ResizePanel from "react-resize-panel";
-import Scroll from 'react-scroll';
 
 import API from '../api/API';
 
 import { ThemeContext } from '../components/themeContext';
+import InfiniteScroll from '../components/InfiniteScroll';
 import ListFriends from '../components/ListFriends';
-import ListMessages from '../components/ListMessages';
+import Loading from '../components/Loading';
 import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
+import socket from '../helpers/socketConnect';
 import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon } from '../icons';
-import LoadingImg from '../icons/loading.gif';
+
+const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
 
 function ChatPage() {
     const { theme, setTheme } = useContext(ThemeContext);
-    const socket = useSelector((state) => state.socket.value);
     const [listFriends, setListFriends] = useState([]);
     const [listMessages, setListMessages] = useState([]);
     const [currentUser, setCurrentUser] = useState({});
     const [reply, setReply] = useState("");
+    const [loadingBottom, setLoadingBottom] = useState(false);
+    const [loadingTop, setLoadingTop] = useState(false);
+    const [skip, setSkip] = useState(0);
+    const [limit, setLimit] = useState(envLimit);
+    const [hasMoreTop, setHasMoreTop] = useState(true);
+    const [hasMoreBot, setHasMoreBot] = useState(true);
+    const [loadingMess, setLoadingMess] = useState(false);
+    const [loadingFr, setLoadingFr] = useState(false);
     const [isChangeData, setIsChangeData] = useState(false);
-    const [skip, setSkip] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [profileHide, setProfileHide] = useState(true);
     const [word, setWord] = useState("");
+    const [dataIndex, setDataIndex] = useState([]);
     const messAudio = new Audio(audio);
 
-    const Element = Scroll.Element;
-    const scroller = Scroll.scroller;
+    useEffect(() => {
+        socket.on("UserSendMess", data => {
+            if (currentUser.lineId !== data.id || data.id !== 'channel') {
+                messAudio.play();
+                changeData();
+            }
+            return false;
+        });
 
-    socket.on("UserSendMess", data => {
-        if (currentUser.lineId !== data.id || data.id !== 'channel') {
-            messAudio.play();
-            setIsChangeData(!isChangeData);
+        socket.on("OnChangeListMessBySearch", data => {
+            console.log("listIndex", data.listIndex);
+            setDataIndex(data.listIndex);
+            if (data.listIndex.length > 0) {
+                setSkip(data.listIndex[0]);
+                changeData();
+            }
+        });
+
+        return () => {
+            socket.off("UserSendMess");
+            socket.off("OnChangeListMessBySearch");
         }
     });
+
 
     function isDark() {
         return theme === "dark";
     }
 
-    function updateListMess(id, skip) {
-        const body = { id, skip };
-        API.getListMessages(body)
+    async function updateListMess(id, limit, skip) {
+        const body = { id, limit, skip };
+        await API.getListMessages(body)
             .then(res => {
                 console.log(res.data.data);
-                const { listMess, hasMore } = res.data.data;
+                const { listMess, hasMoreTop, hasMoreBot } = res.data.data;
                 setListMessages(listMess);
-                setHasMore(hasMore);
+                setHasMoreTop(hasMoreTop);
+                setHasMoreBot(hasMoreBot);
             });
+        setLoadingMess(false);
+        setLoadingBottom(false);
+        setLoadingTop(false);
     }
 
-    function updateListFriend() {
-        API.getListFriend()
+    async function updateListFriend() {
+        await API.getListFriend()
             .then(res => {
                 if (res.data.error) {
                     toast.error(res.data.message);
@@ -71,41 +95,55 @@ function ChatPage() {
             }).catch(err => {
                 console.log(err);
             })
+        setLoadingFr(false);
     }
 
     function onMessSearch(e) {
-        const timeOutId = setTimeout(() => {
-            setWord(e.target.value);
-            socket.emit('SearchMess', word)
-        }, 500);
-        return () => clearTimeout(timeOutId);
+        setWord(e.target.value);
+        socket.emit('SearchMess', e.target.value);
     }
 
-    function fetchMoreMess() {
-        setSkip(skip + 1);
-        setIsChangeData(!isChangeData);
+    async function fetchMoreMess(to) {
+        if (to === 'top') {
+            console.log("fetchinggggg Top");
+            setLoadingTop(true);
+            setLimit(limit + envLimit);
+        } else if (to === 'bot' && skip !== 0) {
+            console.log("fetchinggggg Bot");
+            setLoadingBottom(true);
+            if(skip - envLimit > 0) {
+                setSkip(skip - envLimit);
+            } else {
+                setSkip(0);
+            }
+        }
+        changeData();
     }
 
     const onFriendClick = (user) => {
-        setLoading(true);
-        setSkip(1);
-        setHasMore(true);
+        setLoadingMess(true);
+        setLimit(envLimit);
+        setHasMoreTop(true);
+        setHasMoreBot(false);
         setCurrentUser(user);
     }
 
+    function changeData() {
+        setIsChangeData(!isChangeData);
+    }
+
+    useEffect(() => {
+        updateListMess(currentUser.lineId, limit, skip);
+        updateListFriend();
+    }, [currentUser, isChangeData]);
+
     useEffect(() => {
         document.title = "Sakura Chat";
+        setLoadingFr(true);
+        setLimit(envLimit);
         updateListFriend();
-        setLoading(false);
-        scroller.scrollTo('endMessage', {
-            duration: 1500,
-            delay: 100,
-            smooth: true,
-            containerId: '',
-            offset: 50, // Scrolls to element + 50 pixels down the page
-        });
-        updateListMess(currentUser.lineId, skip);
-    }, [currentUser, isChangeData]);
+    }, []);
+
 
     function handleKeyPress(e) {
         if (e.nativeEvent.shiftKey) {
@@ -159,7 +197,7 @@ function ChatPage() {
                                 </div>
                             </div>
                         </div>
-                        <ListFriends listFriends={listFriends} currentUser={currentUser} onFriendClick={onFriendClick} />
+                        {loadingFr ? <Loading /> : <ListFriends listFriends={listFriends} currentUser={currentUser} onFriendClick={onFriendClick} />}
                     </div>
                 </div>
             </ResizePanel>
@@ -167,7 +205,7 @@ function ChatPage() {
             {
                 currentUser.name !== undefined ? <>
                     <div className="flex-1 flex flex-col bg-primary w-full text-primary overflow-hidden">
-                        <div className="border-b-2 bg-primary text-primary flex border-r-2 px-6 py-2 items-center flex-none dark:border-gray-500">
+                        <div className="border-b-2 bg-primary text-primary flex px-6 py-2 items-center flex-none">
                             <div className="flex items-center">
                                 <div className="m-1 mr-2 w-16 h-16 relative flex justify-center items-center rounded-full bg-gray-500 text-xl">
                                     <img src={currentUser.avatar} className="rounded-full" alt="avatar" />
@@ -180,7 +218,7 @@ function ChatPage() {
                             </div>
                             <div className="ml-auto hidden md:block">
                                 <div className="relative appearance-none">
-                                    <input type="search" onChange={onMessSearch} placeholder="Search" className="appearance-none border border-grey rounded-lg pl-8 pr-4 py-2 focus:outline-none" />
+                                    <input type="text" onChange={onMessSearch} placeholder="Search..." className="dark:text-gray-800 appearance-none border border-grey text-primary rounded-lg pl-8 pr-4 py-2 focus:outline-none" />
                                     <div className="absolute top-3 right-3 pl-3 flex items-center justify-center">
                                         <SearchIcon className="fill-current text-gray-500 h-4 w-4" />
                                     </div>
@@ -190,35 +228,22 @@ function ChatPage() {
                                 <MenuIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                             </button>
                         </div>
-                        <div className="pr-6 pl-8 pb-4 pt-10 flex-1 flex flex-col-reverse overflow-y-scroll h-full border-r-2 dark:border-gray-500" id="scrollableDiv">
-                            {
-                                !loading && <InfiniteScroll
-                                    dataLength={listMessages.length}
-                                    next={fetchMoreMess}
-                                    style={{ display: "flex", flexDirection: 'column-reverse', overflow: 'hidden' }}
-                                    inverse={hasMore}
-                                    hasMore={hasMore}
-                                    scrollableTarget="scrollableDiv"
-                                    loader={
-                                        <span className="text-primary opacity-75 mt-2 mb-8 mx-auto block relative w-10 h-6">
-                                            <img src={LoadingImg} />
-                                        </span>
-                                    }
-                                    endMessage={
-                                        <div className={`flex my-8 items-center text-center ${skip === 1 ? "hidden" : ""}`}>
-                                            <hr className="border-gray-300 border-1 w-full rounded-md" />
-                                            <label className="block font-medium text-sm text-primary w-full">
-                                                Yay! You have seen it all
-            </label>
-                                            <hr className="border-gray-300 border-1 w-full rounded-md" />
-                                        </div>
-                                    }
-                                >
-                                    {word.length === 0 && <Element name="endMessage"></Element>}
-                                    <ListMessages listMessages={listMessages} currentUser={currentUser} word={word} />
-                                </InfiniteScroll>
-                            }
-                        </div>
+
+                        {
+                            loadingMess ? <Loading /> : <InfiniteScroll
+                                loading={false}
+                                listMessages={listMessages}
+                                fetchMoreMess={fetchMoreMess}
+                                hasMoreTop={hasMoreTop}
+                                hasMoreBot={hasMoreBot}
+                                currentUser={currentUser}
+                                word={word}
+                                skip={skip}
+                                loadingBottom={loadingBottom}
+                                loadingTop={loadingTop}
+                            />
+                        }
+
                         <div className="flex flex-col">
                             <div className="flex bg-gray-300 dark:bg-gray-500 justify-start px-4">
                                 <Popup modal trigger={
@@ -233,7 +258,7 @@ function ChatPage() {
                                 </button>
                             </div>
                             <TextareaAutosize
-                                className="bg-primary text-primary w-full border-r-2 px-6 py-2 appearance-none focus:outline-none dark:border-gray-500"
+                                className="bg-primary text-primary w-full px-6 py-2 appearance-none focus:outline-none"
                                 minRows={4}
                                 placeholder={`Send message to ${currentUser.name}`}
                                 onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => {
@@ -244,7 +269,7 @@ function ChatPage() {
                         </div>
                     </div>
 
-                    <div className={`bg-primary text-primary flex-none w-72 lg:w-96 py-6 ${profileHide ? "" : "hidden"}`}>
+                    <div className={`bg-primary text-primary border-l-2 dark:border-gray-500 flex-none w-72 lg:w-96 py-6 ${profileHide ? "" : "hidden"}`}>
                         <div>
                             <div className="relative border-b-2 pb-8 flex flex-col items-center text-primary dark:border-gray-500">
                                 <button className={`absolute text-xl text-primary p-2 focus:outline-none -top-3 right-3 ${profileHide ? "" : "hidden"} opacity-80 hover:opacity-100`}

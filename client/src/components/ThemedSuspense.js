@@ -3,11 +3,10 @@ import React from 'react';
 
 function ThemedSuspense() {
     return (
-        <div className="w-full h-screen flex justify-center items-center p-6 text-lg font-medium text-gray-600 dark:text-gray-400 dark:bg-gray-900">
-            <div className="">
-                <svg className="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24">
-                </svg>
-            </div>
+        <div className="w-full h-full fixed block top-0 left-0 bg-white opacity-75 z-50">
+            <span className="text-green-500 opacity-75 top-1/2 my-0 mx-auto block relative w-0 h-0" style={{ top: '50%' }}>
+                <i className="fas fa-circle-notch fa-spin fa-5x" />
+            </span>
         </div>
     )
 }

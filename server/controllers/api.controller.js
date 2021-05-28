@@ -26,7 +26,7 @@ exports.store = async (req, res) => {
 }
 
 exports.getFriends = async (req, res) => {
-    const listFriends = await User.find({}).sort({ lastTime: -1 }).exec();
+    const listFriends = await User.find({}).sort({ lastTime: 1 }).exec();
 
     var result = [];
     for (let i = 0; i < listFriends.length; i++) {
@@ -49,22 +49,20 @@ exports.getFriends = async (req, res) => {
 }
 
 exports.getMessages = async (req, res) => {
-    const { id, skip } = req.body;
+    const { id, skip, limit } = req.body;
     console.log(req.body);
-    const limit = 15 * skip;
     await Message.updateMany({ $and: [{ fromId: id }, { toId: 'channel' }] }, { seen: true }).exec();
-    const listMess = await Message.find({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }] }, { $and: [{ fromId: 'channel', toId: id }] }] }).limit(limit).sort({ _id: -1 }).exec();
+    const listMess = await Message.find({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }] }, { $and: [{ fromId: 'channel', toId: id }] }] }).skip(skip < 0 ? 0 : skip).limit(limit).sort({ _id: -1 }).exec();
     const countMess = await Message.countDocuments({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }] }, { $and: [{ fromId: 'channel', toId: id }] }] }).exec();
-    const maxSkip = Math.ceil(countMess / 15);
-    console.log(skip, maxSkip, countMess);
     res.status(200).json({
         errors: [],
         message: "",
         data: {
             listMess,
-            hasMore: maxSkip === 0 ? false : skip >= maxSkip ? false : true
+            hasMoreTop: limit > countMess ? false  : true,
+            hasMoreBot: skip > 0 ? true : false
         }
-    })
+    });
 }
 
 exports.postMessage = async (req, res) => {
@@ -183,7 +181,7 @@ exports.postMessage = async (req, res) => {
                 console.log(err);
             })
 
-        io.emit("UserSendMess", { id: "channel" });
+        io.emit("UserSendMess", { id: 'channel' });
 
         res.status(200).json({
             errors: [],
