@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import socketReducer from '../slices/socketSlice';
+import keywordReducer from '../slices/keywordSlice';
 
 export default configureStore({
   reducer: {
-      socket: socketReducer
+      keyword: keywordReducer
   },
 })

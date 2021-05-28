@@ -15,7 +15,7 @@ function SelfImgMess({ images, seen, time }) {
                 {seen && <span className="text-gray-200 text-xs mx-2">✔</span>}
             </div>
             <div className="flex flex-row-reverse justify-start items-end text-sm">
-                <ul className="flex flex-wrap -mx-4 mb-1 flex-row-reverse w-4/5 h-4/5">
+                <ul className="flex flex-wrap -mx-4 mb-1 flex-row-reverse w-4/5">
                     {
                         images.map((img, i) => {
                             return <Popup key={i} modal trigger={

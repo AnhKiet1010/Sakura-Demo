@@ -4,7 +4,8 @@ import { AccessTokenInterceptor, UnauthorizeInterceptor } from "./Interceptors";
 import {
     URL_API_FRIENDS_LIST,
     URL_API_LIST_MESSAGES,
-    URL_API_SEND_MESSAGE
+    URL_API_SEND_MESSAGE,
+    URL_API_GET_IMAGES
 } from './URL';
 
 const getInstance = () => {
@@ -35,6 +36,10 @@ API.getListMessages = (body) => {
 
 API.sendMessage = (body) => {
     return API.instance.post(URL_API_SEND_MESSAGE, body);
+};
+
+API.getImages = (body) => {
+    return API.instance.post(URL_API_GET_IMAGES, body);
 };
 
 export default API;

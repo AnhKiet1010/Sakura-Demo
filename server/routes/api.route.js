@@ -8,7 +8,8 @@ const {
     store,
     getFriends,
     getMessages,
-    postMessage
+    postMessage,
+    getImages
 } = require('../controllers/api.controller');
 
 router.get("/category", category);
@@ -16,5 +17,6 @@ router.get("/store", store);
 router.get("/friends", checkToken, getFriends);
 router.post("/messages", getMessages);
 router.post("/send-message", upload.array('files', 12), postMessage);
+router.post("/get-images", getImages);
 
 module.exports = router;

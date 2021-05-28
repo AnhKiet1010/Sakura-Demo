@@ -9,13 +9,13 @@ import { Provider } from 'react-redux'
 import { ThemeProvider } from "./components/themeContext";
 
 ReactDOM.render(
-  // <Provider store={store}>
+  <Provider store={store}>
     <ThemeProvider>
       <Suspense Suspense fallback={< ThemedSuspense />}>
         <App />
       </Suspense >
-    </ThemeProvider>,
-  // </Provider>,
+    </ThemeProvider>
+  </Provider>,
   document.getElementById('root')
 );
 

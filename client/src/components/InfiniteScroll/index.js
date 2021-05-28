@@ -22,26 +22,24 @@ function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, l
         // do something at top of scrol
         if (hasMoreTop && element.scrollHeight + element.scrollTop === element.clientHeight) {
             fetchMoreMess('top');
-            scrollToBottom();
         }
         if (hasMoreBot && element.scrollTop === 0) {
             // do something at end of scroll
             fetchMoreMess('bot');
-            scrollToBottom();
         }
     }
 
 
 
     return (
-        <div className="pr-6 pl-8 pb-4 pt-10 flex-1 flex flex-col-reverse overflow-y-scroll h-full border-r-2 dark:border-gray-500" id="scrollAbleDiv" onScroll={handleScroll}>
-            <div ref={messagesEndRef} className="mb=8" />
+        <div className="pr-6 pl-8 pb-4 pt-10 flex-1 flex flex-col-reverse overflow-y-scroll h-full" id="scrollAbleDiv" onScroll={handleScroll}>
+            {skip === 0 && <div ref={messagesEndRef} className="" />}
             {
                 loadingBottom && <span className="text-primary opacity-75 py-4 flex  justify-center mx-auto items-center relative w-10 h-6">
                     <img src={LoadingImg} alt="loading" />
                 </span>
             }
-            <ListMessages listMessages={listMessages} currentUser={currentUser} word={word} />
+            <ListMessages listMessages={listMessages} currentUser={currentUser} word={word} skip={skip} />
             {loadingTop && <span className="text-primary opacity-75 py-8 flex justify-center mx-auto items-center relative w-10 h-6">
                 <img src={LoadingImg} alt="loading" />
             </span>

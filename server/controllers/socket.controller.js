@@ -50,18 +50,15 @@ exports.channelSendMess = async (data, socket) => {
 
 exports.searchMess = async (data, socket) => {
     console.log('data', data);
+    const {text, skip, limit} = data;
 
-    var dataIndex = 0;
-    var dataIndexArr = [];
-    const listMess = await Message.find({}, { "content": 1 }).sort({ _id: -1 }).exec();
+    const query = text.toLowerCase().replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&");
 
-    listMess.forEach(function (mess) {
-        dataIndex++;
-        if (mess.content.includes(data)) {
-            dataIndexArr.push(dataIndex);
-        }
+    const listMessFilter = await Message.find({ content: { $regex: query, $options: 'i' } }).skip(skip).limit(parseInt(limit)).sort({ _id: -1 }).exec();
+    const count = await Message.countDocuments({ content: { $regex: query, $options: 'i' } }).sort({ _id: -1 }).exec();
+    console.log('listMessFilter', listMessFilter);
+    socket.emit('OnChangeListMessBySearch', { 
+        listMessFilter: listMessFilter,
+        searchTotal: count
     });
-
-    console.log('dataIndexArr', dataIndexArr);
-    socket.emit('OnChangeListMessBySearch', { listIndex: dataIndexArr });
 }

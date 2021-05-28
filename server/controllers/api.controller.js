@@ -59,10 +59,23 @@ exports.getMessages = async (req, res) => {
         message: "",
         data: {
             listMess,
-            hasMoreTop: limit > countMess ? false  : true,
+            hasMoreTop: limit > countMess ? false : true,
             hasMoreBot: skip > 0 ? true : false
         }
     });
+}
+
+exports.getImages = async (req, res) => {
+    const { id } = req.body;
+    console.log(req.body);
+    const listMess = await Message.find({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }, { type: 'image' }] }, { $and: [{ fromId: 'channel' }, { toId: id }, { type: 'image' }] }] }).sort({ _id: -1 }).exec();
+    var result = [];
+    listMess.forEach(element => {
+        result = [...result, ...element.images];
+    });
+    res.json({
+        result
+    })
 }
 
 exports.postMessage = async (req, res) => {

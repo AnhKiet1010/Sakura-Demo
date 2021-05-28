@@ -2,9 +2,12 @@ import React, { useEffect, useState, useContext } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from "reactjs-popup";
+import Aos from 'aos';
 import 'reactjs-popup/dist/index.css';
 import 'react-toastify/dist/ReactToastify.css';
+import 'aos/dist/aos.css';
 import ResizePanel from "react-resize-panel";
+import { useDispatch, useSelector } from 'react-redux';
 
 import API from '../api/API';
 
@@ -14,13 +17,17 @@ import ListFriends from '../components/ListFriends';
 import Loading from '../components/Loading';
 import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
+import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
 import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon } from '../icons';
+import { setKeyword } from '../slices/keywordSlice';
 
 const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
 
 function ChatPage() {
+    const dispatch = useDispatch();
+    const keyword = useSelector(state => state.keyword);
     const { theme, setTheme } = useContext(ThemeContext);
     const [listFriends, setListFriends] = useState([]);
     const [listMessages, setListMessages] = useState([]);
@@ -36,9 +43,13 @@ function ChatPage() {
     const [loadingFr, setLoadingFr] = useState(false);
     const [isChangeData, setIsChangeData] = useState(false);
     const [profileHide, setProfileHide] = useState(true);
-    const [word, setWord] = useState("");
-    const [dataIndex, setDataIndex] = useState([]);
+    const [word, setWord] = useState(keyword);
+    const [listMessFilter, setListMessFilter] = useState([]);
+    const [showListFilterMess, setShowListFilterMess] = useState(false);
     const messAudio = new Audio(audio);
+    const [searchLimit, setSearchLimit] = useState(5);
+    const [searchSkip, setSearchSkip] = useState(0);
+    const [searchTotal, setSearchTotal] = useState(0);
 
     useEffect(() => {
         socket.on("UserSendMess", data => {
@@ -50,12 +61,9 @@ function ChatPage() {
         });
 
         socket.on("OnChangeListMessBySearch", data => {
-            console.log("listIndex", data.listIndex);
-            setDataIndex(data.listIndex);
-            if (data.listIndex.length > 0) {
-                setSkip(data.listIndex[0]);
-                changeData();
-            }
+            setListMessFilter(data.listMessFilter);
+            setSearchTotal(data.searchTotal);
+            console.log("listFilter", listMessFilter);
         });
 
         return () => {
@@ -64,6 +72,9 @@ function ChatPage() {
         }
     });
 
+    function handleWordChange(e) {
+        setWord(e.target.value);
+    }
 
     function isDark() {
         return theme === "dark";
@@ -98,9 +109,46 @@ function ChatPage() {
         setLoadingFr(false);
     }
 
-    function onMessSearch(e) {
+    function handleSearchPress(e) {
         setWord(e.target.value);
-        socket.emit('SearchMess', e.target.value);
+        if (e.nativeEvent.keyCode === 13) {
+            e.preventDefault();
+            const action = setKeyword(e.target.value);
+            dispatch(action);
+            socket.emit('SearchMess', {
+                text: e.target.value,
+                skip: searchSkip,
+                limit: searchLimit
+            });
+            setShowListFilterMess(true);
+        }
+    }
+
+    function handleChangeSkipPrev() {
+        setSearchSkip(searchSkip - searchLimit < 0 ? 0 : searchSkip - searchLimit);
+        socket.emit('SearchMess', {
+            text: word,
+            skip: searchSkip - searchLimit < 0 ? 0 : searchSkip - searchLimit,
+            limit: searchLimit
+        });
+    }
+
+    function handleChangeSkipNext() {
+        setSearchSkip(parseInt(searchSkip) + parseInt(searchLimit));
+        socket.emit('SearchMess', {
+            text: word,
+            skip: parseInt(searchSkip) + parseInt(searchLimit),
+            limit: searchLimit
+        });
+    }
+
+    function handleChangeLimitSearch(e) {
+        setSearchLimit(e.target.value);
+        socket.emit('SearchMess', {
+            text: word,
+            skip: searchSkip,
+            limit: e.target.value
+        });
     }
 
     async function fetchMoreMess(to) {
@@ -111,7 +159,7 @@ function ChatPage() {
         } else if (to === 'bot' && skip !== 0) {
             console.log("fetchinggggg Bot");
             setLoadingBottom(true);
-            if(skip - envLimit > 0) {
+            if (skip - envLimit > 0) {
                 setSkip(skip - envLimit);
             } else {
                 setSkip(0);
@@ -142,6 +190,7 @@ function ChatPage() {
         setLoadingFr(true);
         setLimit(envLimit);
         updateListFriend();
+        Aos.init({});
     }, []);
 
 
@@ -165,8 +214,18 @@ function ChatPage() {
         setProfileHide(!profileHide);
     }
 
+    function onCloseSearchPopup() { 
+        setWord("");
+        setShowListFilterMess(false);
+        const action = setKeyword("");
+        setSearchLimit(5);
+        setSearchSkip(0);
+        setSearchTotal(0);
+        dispatch(action);
+    }
+
     return (
-        <div className="font-sans antialiased h-screen w-full flex">
+        <div className="relative font-sans antialiased h-screen w-full flex overflow-hidden">
             <ToastContainer />
             <ResizePanel direction="e" className="border-r-2">
                 <div className="relative z-10 bg-primary text-primary flex-none w-72 min-w-full pb-6 hidden md:block border-r-2 dark:border-gray-500">
@@ -201,10 +260,25 @@ function ChatPage() {
                     </div>
                 </div>
             </ResizePanel>
+            <MessFilterPopup
+                showListFilterMess={showListFilterMess}
+                onClose={onCloseSearchPopup}
+                word={word}
+                currentUser={currentUser}
+                handleSearchPress={handleSearchPress}
+                listMessFilter={listMessFilter}
+                handleWordChange={handleWordChange}
+                searchLimit={searchLimit}
+                searchSkip={searchSkip}
+                searchTotal={searchTotal}
+                handleChangeLimitSearch={handleChangeLimitSearch}
+                handleChangeSkipPrev={handleChangeSkipPrev}
+                handleChangeSkipNext={handleChangeSkipNext}
 
+            />
             {
                 currentUser.name !== undefined ? <>
-                    <div className="flex-1 flex flex-col bg-primary w-full text-primary overflow-hidden">
+                    <div className={`relative flex-1 flex flex-col bg-primary w-full text-primary overflow-hidden`}>
                         <div className="border-b-2 bg-primary text-primary flex px-6 py-2 items-center flex-none">
                             <div className="flex items-center">
                                 <div className="m-1 mr-2 w-16 h-16 relative flex justify-center items-center rounded-full bg-gray-500 text-xl">
@@ -218,13 +292,19 @@ function ChatPage() {
                             </div>
                             <div className="ml-auto hidden md:block">
                                 <div className="relative appearance-none">
-                                    <input type="text" onChange={onMessSearch} placeholder="Search..." className="dark:text-gray-800 appearance-none border border-grey text-primary rounded-lg pl-8 pr-4 py-2 focus:outline-none" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        className="dark:text-gray-800 appearance-none border border-grey text-primary rounded-lg pl-8 pr-4 py-2 focus:outline-none"
+                                        onKeyDown={(e) => handleSearchPress(e)}
+                                        onChange={handleWordChange}
+                                        value={word} />
                                     <div className="absolute top-3 right-3 pl-3 flex items-center justify-center">
                                         <SearchIcon className="fill-current text-gray-500 h-4 w-4" />
                                     </div>
                                 </div>
                             </div>
-                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 ${profileHide ? "hidden" : ""} hover:opacity-100`} onClick={onHideProfile}>
+                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 ${profileHide ? "" : "hidden"} hover:opacity-100`} onClick={onHideProfile}>
                                 <MenuIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                             </button>
                         </div>
@@ -269,10 +349,10 @@ function ChatPage() {
                         </div>
                     </div>
 
-                    <div className={`bg-primary text-primary border-l-2 dark:border-gray-500 flex-none w-72 lg:w-96 py-6 ${profileHide ? "" : "hidden"}`}>
+                    <div className={`absolute right-0 z-10 h-screen bg-primary text-primary border-l-2 dark:border-gray-500 flex-none w-72 lg:w-96 py-6 transform translate-x-full ${profileHide ? 'slide-out' : 'slide-in'}`}>
                         <div>
                             <div className="relative border-b-2 pb-8 flex flex-col items-center text-primary dark:border-gray-500">
-                                <button className={`absolute text-xl text-primary p-2 focus:outline-none -top-3 right-3 ${profileHide ? "" : "hidden"} opacity-80 hover:opacity-100`}
+                                <button className={`absolute text-xl text-primary p-2 focus:outline-none -top-3 right-3 opacity-80 hover:opacity-100`}
                                     onClick={onHideProfile}>
                                     <CancelIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                                 </button>
