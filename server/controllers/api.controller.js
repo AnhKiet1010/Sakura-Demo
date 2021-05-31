@@ -75,7 +75,7 @@ exports.getImages = async (req, res) => {
     });
     res.json({
         result
-    })
+    });
 }
 
 exports.postMessage = async (req, res) => {

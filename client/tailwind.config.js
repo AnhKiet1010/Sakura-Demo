@@ -17,7 +17,10 @@ module.exports = {
   variants: {
     extend: {
       textOpacity: ['dark'],
-      opacity: ['disabled']
+      opacity: ['disabled'],
+      backdropBlur: {
+        xs: '2px',
+      }
     }
   },
   plugins: [],

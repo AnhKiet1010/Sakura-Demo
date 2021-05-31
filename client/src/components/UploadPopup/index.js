@@ -3,6 +3,7 @@ import API from '../../api/API';
 
 import ImageTempl from './ImageTempl';
 import FileTempl from './FileTempl';
+import { CancelIcon } from '../../icons';
 
 
 function UploadPopup({ close, currentUser }) {
@@ -76,7 +77,8 @@ function UploadPopup({ close, currentUser }) {
     }
 
     return (
-        <div className="-mx-3 bg-primary text-primary p-5 flex flex-col">
+        <div className="relative -mx-3 bg-primary text-primary p-5 flex flex-col">
+            <CancelIcon className="absolute w-8 h-8 -top-3 -right-3 text-black bg-white p-2 rounded-full z-10 cursor-pointer" onClick={close} />
             <label className="block uppercase tracking-wide text-grey-darker text-xl text-center font-bold mb-2"
                 htmlFor="grid-state">
                 Upload File
@@ -141,11 +143,6 @@ function UploadPopup({ close, currentUser }) {
                                 loading ? <i className="fas fa-circle-notch fa-spin fa-1x" /> : "Send"
                             }
                         </button>
-                        <button
-                            onClick={close}
-                            className="rounded-sm px-3 py-1 bg-red-700 hover:bg-red-500 text-white focus:shadow-outline focus:outline-none">
-                            Close
-                                            </button>
                     </footer>
                 </article>
             </main>

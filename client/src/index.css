@@ -26,6 +26,8 @@ input#toogleA:checked~.dot {
   --color-text-primary: #f7fafc;
   --color-text-secondary: #e2e8f0;
   --color-text-accent: #81e6d9;
+  --swiper-navigation-color: #000;
+  --swiper-pagination-color: #000;
 }
 
 .light {
@@ -34,11 +36,17 @@ input#toogleA:checked~.dot {
   --color-text-primary: #2d3748;
   --color-text-secondary: #4a5568;
   --color-text-accent: #2b6cb0;
+  --swiper-navigation-color: #fff;
+  --swiper-pagination-color: #fff;
 }
 
 /* ::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 } */
+
+.popup-overlay {
+  background: rgba(0, 0, 0, .8) !important;
+}
 
 ::-webkit-scrollbar {
   width: 5px;
@@ -101,6 +109,28 @@ input#toogleA:checked~.dot {
   max-width: 80% !important;
   width: 100% !important;
   max-height: 80% !important;
+}
+
+.swiper-container {
+  background-color: #000 !important;
+}
+
+.dark .swiper-container {
+  background-color: #fff !important;
+}
+
+.mySwiperSlide .swiper-slide>img {
+  width: 80%;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  height: 500px;
+  object-fit: contain;
+}
+
+.mySwiper .swiper-slide>img {
+  width: 100%;
+  object-fit: cover;
+  height: 185px;
 }
 
 @tailwind base;

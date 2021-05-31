@@ -5,7 +5,7 @@ import ImgMess from '../Messages/ImgMess';
 import AudioMess from '../Messages/AudioMess';
 import SelfVideoMess from '../Messages/SelfVideoMess';
 
-function ListMessages({ listMessages, currentUser, word, skip }) {
+function ListMessages({ listMessages, currentUser, word, slideImages }) {
 
     return (
         <>
@@ -14,7 +14,7 @@ function ListMessages({ listMessages, currentUser, word, skip }) {
                     let result = "";
                     if (mess.fromId === currentUser.lineId) {
                         if (mess.type === 'image') {
-                            result = <ImgMess key={i} time={mess.time} images={mess.images} seen={mess.seen} avatar={currentUser.avatar} />
+                            result = <ImgMess key={i} time={mess.time} images={mess.images} seen={mess.seen} avatar={currentUser.avatar} slideImages={slideImages} />
                         } else if (mess.type === 'audio') {
                             result = <AudioMess src={mess.link} key={i} avatar={currentUser.avatar} seen={mess.seen} time={mess.time} />
                         } else {
@@ -22,7 +22,7 @@ function ListMessages({ listMessages, currentUser, word, skip }) {
                         }
                     } else {
                         if (mess.type === 'image') {
-                            result = <SelfImgMess key={i} time={mess.time} images={mess.images} seen={mess.seen} />
+                        result = <SelfImgMess key={i} time={mess.time} images={mess.images} seen={mess.seen} slideImages={slideImages} />
                         } else if (mess.type === 'video') {
                             result = <SelfVideoMess key={i} link={mess.link} seen={mess.seen} time={mess.time} />
                         } else {

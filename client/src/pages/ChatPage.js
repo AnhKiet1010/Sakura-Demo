@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from "reactjs-popup";
@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'aos/dist/aos.css';
 import ResizePanel from "react-resize-panel";
 import { useDispatch, useSelector } from 'react-redux';
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker } from 'emoji-mart';
 
 import API from '../api/API';
 
@@ -19,8 +21,11 @@ import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
 import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
-import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon } from '../icons';
+import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon } from '../icons';
 import { setKeyword } from '../slices/keywordSlice';
+import { setCurrentUser } from '../slices/currentUserSlice';
+import handleEmojiClickOutside from '../helpers/handleEmojiClickOutside';
+import handleProfileClickOutside from '../helpers/handleProfileClickOutside';
 
 const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
@@ -28,10 +33,10 @@ const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 function ChatPage() {
     const dispatch = useDispatch();
     const keyword = useSelector(state => state.keyword);
+    const currentUser = useSelector(state => state.currentUser);
     const { theme, setTheme } = useContext(ThemeContext);
     const [listFriends, setListFriends] = useState([]);
     const [listMessages, setListMessages] = useState([]);
-    const [currentUser, setCurrentUser] = useState({});
     const [reply, setReply] = useState("");
     const [loadingBottom, setLoadingBottom] = useState(false);
     const [loadingTop, setLoadingTop] = useState(false);
@@ -42,7 +47,6 @@ function ChatPage() {
     const [loadingMess, setLoadingMess] = useState(false);
     const [loadingFr, setLoadingFr] = useState(false);
     const [isChangeData, setIsChangeData] = useState(false);
-    const [profileHide, setProfileHide] = useState(true);
     const [word, setWord] = useState(keyword);
     const [listMessFilter, setListMessFilter] = useState([]);
     const [showListFilterMess, setShowListFilterMess] = useState(false);
@@ -50,6 +54,19 @@ function ChatPage() {
     const [searchLimit, setSearchLimit] = useState(5);
     const [searchSkip, setSearchSkip] = useState(0);
     const [searchTotal, setSearchTotal] = useState(0);
+    const [slideImages, setSlideImages] = useState([]);
+    const {
+        ref,
+        isComponentVisible,
+        setIsComponentVisible
+    } = handleEmojiClickOutside(false);
+
+    const {
+        refProfile,
+        showProfile,
+        setShowProfile
+    } = handleProfileClickOutside(false);
+
 
     useEffect(() => {
         socket.on("UserSendMess", data => {
@@ -91,8 +108,6 @@ function ChatPage() {
                 setHasMoreBot(hasMoreBot);
             });
         setLoadingMess(false);
-        setLoadingBottom(false);
-        setLoadingTop(false);
     }
 
     async function updateListFriend() {
@@ -173,16 +188,28 @@ function ChatPage() {
         setLimit(envLimit);
         setHasMoreTop(true);
         setHasMoreBot(false);
-        setCurrentUser(user);
+        let action = setCurrentUser(user);
+        dispatch(action);
+
     }
 
     function changeData() {
         setIsChangeData(!isChangeData);
     }
 
+    function UpdateListImagesMess(id) {
+        API.getImages({ id })
+            .then((res) => {
+                if (res.status === 200) {
+                    setSlideImages(res.data.result);
+                }
+            });
+    }
+
     useEffect(() => {
         updateListMess(currentUser.lineId, limit, skip);
         updateListFriend();
+        UpdateListImagesMess(currentUser.lineId);
     }, [currentUser, isChangeData]);
 
     useEffect(() => {
@@ -210,11 +237,7 @@ function ChatPage() {
         }
     }
 
-    function onHideProfile() {
-        setProfileHide(!profileHide);
-    }
-
-    function onCloseSearchPopup() { 
+    function onCloseSearchPopup() {
         setWord("");
         setShowListFilterMess(false);
         const action = setKeyword("");
@@ -223,6 +246,11 @@ function ChatPage() {
         setSearchTotal(0);
         dispatch(action);
     }
+
+    function addEmoji(e) {
+        let emoji = e.native;
+        setReply(reply + emoji);
+    };
 
     return (
         <div className="relative font-sans antialiased h-screen w-full flex overflow-hidden">
@@ -304,7 +332,7 @@ function ChatPage() {
                                     </div>
                                 </div>
                             </div>
-                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 ${profileHide ? "" : "hidden"} hover:opacity-100`} onClick={onHideProfile}>
+                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 ${showProfile ? "hidden" : ""} hover:opacity-100`} onClick={() => setShowProfile(true)}>
                                 <MenuIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                             </button>
                         </div>
@@ -321,21 +349,30 @@ function ChatPage() {
                                 skip={skip}
                                 loadingBottom={loadingBottom}
                                 loadingTop={loadingTop}
+                                slideImages={slideImages}
                             />
                         }
 
                         <div className="flex flex-col">
                             <div className="flex bg-gray-300 dark:bg-gray-500 justify-start px-4">
                                 <Popup modal trigger={
-                                    <button className="text-3xl text-primary p-2 focus:outline-none">
+                                    <div className="text-3xl text-primary p-2 focus:outline-none cursor-pointer">
                                         <PlusIcon className="h-7 w-7 block fill-current hover:text-secondary" />
-                                    </button>
+                                    </div>
                                 }>
                                     {close => <UploadPopup close={close} currentUser={currentUser} />}
                                 </Popup>
-                                <button className="text-3xl text-primary p-2 focus:outline-none">
+                                <div className="relative text-3xl text-primary p-2 focus:outline-none flex justify-center items-center cursor-pointer" onClick={() => setIsComponentVisible(true)}>
+                                    {
+                                        isComponentVisible && <span ref={ref} className="absolute bottom-12 left-2">
+                                        <Picker onSelect={addEmoji} />
+                                    </span>
+                                    }
+                                    <SmileIcon className="fill-current h-5 w-5 block hover:text-secondary" />
+                                </div>
+                                <div className="text-3xl text-primary p-2 focus:outline-none flex justify-center items-center cursor-pointer">
                                     <MicIcon className="fill-current h-5 w-5 block hover:text-secondary" />
-                                </button>
+                                </div>
                             </div>
                             <TextareaAutosize
                                 className="bg-primary text-primary w-full px-6 py-2 appearance-none focus:outline-none"
@@ -349,11 +386,11 @@ function ChatPage() {
                         </div>
                     </div>
 
-                    <div className={`absolute right-0 z-10 h-screen bg-primary text-primary border-l-2 dark:border-gray-500 flex-none w-72 lg:w-96 py-6 transform translate-x-full ${profileHide ? 'slide-out' : 'slide-in'}`}>
+                    <div className={`absolute right-0 z-10 h-screen bg-primary text-primary border-l-2 dark:border-gray-500 flex-none w-72 lg:w-96 py-6 transform translate-x-full ${showProfile ? 'slide-in' : 'slide-out'}`} ref={refProfile}>
                         <div>
                             <div className="relative border-b-2 pb-8 flex flex-col items-center text-primary dark:border-gray-500">
                                 <button className={`absolute text-xl text-primary p-2 focus:outline-none -top-3 right-3 opacity-80 hover:opacity-100`}
-                                    onClick={onHideProfile}>
+                                    onClick={() => setShowProfile(false)}>
                                     <CancelIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                                 </button>
                                 <img src={currentUser.avatar} alt="avatar" className="rounded-full w-60" />

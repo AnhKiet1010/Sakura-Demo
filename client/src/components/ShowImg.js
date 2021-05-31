@@ -9,22 +9,58 @@ import "swiper/swiper.min.css";
 import "swiper/components/navigation/navigation.min.css"
 import "swiper/components/thumbs/thumbs.min.css"
 
+import { CancelIcon } from '../icons';
+
 // install Swiper's Thumbs component
 SwiperCore.use([Navigation, Thumbs]);
 
-function ShowImg({ listImages }) {
+function ShowImg({ slideImages, onClose, currentImg }) {
+    console.log('currentImg', currentImg);
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
+    const currentIndex = slideImages.indexOf(currentImg);
+    const params = {
+        initialSlide: currentIndex,
+        spaceBetween: 10,
+        navigation: true,
+        thumbs: { swiper: thumbsSwiper }
+    }
 
     return (
-        <>
+        <div className="relative bg-primary shadow-lg">
+            <CancelIcon className="absolute w-8 h-8 -top-3 -right-3 text-black bg-white p-2 rounded-full z-10 cursor-pointer" onClick={onClose} />
+            <Swiper
+                { ...params}
+                className="mySwiperSlide"
+                >
 
-            <Swiper style={{ '--swiper-navigation-color': '#fff', '--swiper-pagination-color': '#fff' }} spaceBetween={10} navigation={true} thumbs={{ swiper: thumbsSwiper }} className="mySwiper2">
-                <SwiperSlide><img src="https://swiperjs.com/demos/images/nature-1.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-2.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-3.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-4.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-5.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-6.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-7.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-8.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-9.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-10.jpg" /></SwiperSlide>
+                {
+                    slideImages.map((img, i) => {
+                        return <SwiperSlide key={i}
+                        style={{backgroundImage: `url(${img})`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: 'cover',
+                        backgroundColor: 'rgb(208 19 19)',
+                        backgroundBlendMode: "screen",
+                    }}
+                        ><img src={img} alt="slide" className="w-4/6" />
+                    </SwiperSlide>
+                    })
+                }
+
             </Swiper>
-            <Swiper onSwiper={setThumbsSwiper} spaceBetween={10} slidesPerView={4} freeMode={true} watchSlidesVisibility={true} watchSlidesProgress={true} className="mySwiper">
-                <SwiperSlide><img src="https://swiperjs.com/demos/images/nature-1.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-2.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-3.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-4.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-5.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-6.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-7.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-8.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-9.jpg" /></SwiperSlide><SwiperSlide><img src="https://swiperjs.com/demos/images/nature-10.jpg" /></SwiperSlide>
+            <Swiper
+                onSwiper={setThumbsSwiper}
+                spaceBetween={10} slidesPerView={4}
+                freeMode={true} watchSlidesVisibility={false}
+                watchSlidesProgress={true}
+                className="mySwiper">
+                {
+                    slideImages.map((img, i) => {
+                        return <SwiperSlide key={i}><img src={img} alt="slide" /></SwiperSlide>
+                    })
+                }
             </Swiper>
-        </>
+        </div>
     )
 }
 

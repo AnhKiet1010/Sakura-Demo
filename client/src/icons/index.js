@@ -7,8 +7,7 @@ import { ReactComponent as PrevIcon } from './prev.svg';
 import { ReactComponent as CancelIcon } from './cancel.svg';
 import { ReactComponent as MenuIcon } from './menu.svg';
 import { ReactComponent as SearchIcon } from './search.svg';
-
-
+import { ReactComponent as SmileIcon } from './smile.svg';
 
 export {
     LightIcon,
@@ -19,5 +18,6 @@ export {
     PrevIcon,
     CancelIcon,
     MenuIcon,
-    SearchIcon
+    SearchIcon,
+    SmileIcon
 }

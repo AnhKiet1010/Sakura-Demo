@@ -25,13 +25,10 @@ function MessFilterPopup({
 
     return (
         <Popup open={showListFilterMess} closeOnDocumentClick={false} className="my-popup">
-            <div className="px-6 py-4 bg-primary">
+            <div className="relative px-6 py-4 bg-primary">
+                <CancelIcon className="absolute w-8 h-8 -top-3 -right-3 text-black bg-white p-2 rounded-full z-10 cursor-pointer" onClick={onClose} />
                 <div className="mb-2 flex justify-between">
                     <h2 className="text-xl font-semibold leading-tight text-primary">Search Messages</h2>
-                    <button className={`text-xl text-primary focus:outline-none opacity-80 hover:opacity-100`}
-                        onClick={onClose}>
-                        <CancelIcon className="fill-current h-6 w-6 block text-primary hover:text-secondary" />
-                    </button>
                 </div>
                 <div className="mt-4 flex sm:flex-row flex-col">
                     <div className="flex flex-row mb-1 sm:mb-0">
@@ -90,15 +87,16 @@ function MessFilterPopup({
                                         listMessFilter.map((mess, i) => {
                                             let arr = [];
                                             arr.push(word);
-                                            let content = formatText(mess.content).map(c => {
+                                            let content = formatText(mess.content).map((c, index) => {
                                                 return <Highlighter
+                                                    key={index}
                                                     highlightClassName="YourHighlightClass animate-pulse dark:bg-gray-600 dark:text-white"
                                                     searchWords={arr}
                                                     autoEscape={true}
                                                     textToHighlight={c.props.children[0]}
                                                 />
                                             })
-                                            return <tr key={i} className={`w-full px-5 py-5 ${i !== listMessFilter.length - 1 ? "border-b": ""} border-gray-200`}>
+                                            return <tr key={i} className={`w-full px-5 py-5 ${i !== listMessFilter.length - 1 ? "border-b" : ""} border-gray-200`}>
                                                 <td className="text-sm w-1/6">
                                                     <div className="flex items-center">
                                                         <div className="flex-shrink-0 w-10 h-10">

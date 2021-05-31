@@ -56,7 +56,6 @@ exports.searchMess = async (data, socket) => {
 
     const listMessFilter = await Message.find({ content: { $regex: query, $options: 'i' } }).skip(skip).limit(parseInt(limit)).sort({ _id: -1 }).exec();
     const count = await Message.countDocuments({ content: { $regex: query, $options: 'i' } }).sort({ _id: -1 }).exec();
-    console.log('listMessFilter', listMessFilter);
     socket.emit('OnChangeListMessBySearch', { 
         listMessFilter: listMessFilter,
         searchTotal: count
