@@ -31,6 +31,7 @@
 .rating-widget .star-input:checked + .star-input-label:nth-of-type(5) .orange {
     animation-delay: 0.4s;
 }
+
 .rating-widget .star-input-label {
     display: inline-block;
     padding: 8px 2px;

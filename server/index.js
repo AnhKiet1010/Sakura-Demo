@@ -25,7 +25,7 @@ const connectDB = require("./config/db");
 // Connect to database
 connectDB();
 
-const { channelSendMess, searchMess } = require("./controllers/socket.controller");
+const { channelSendMess, searchMess, changeReact } = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
     // show connect id in server
@@ -33,6 +33,7 @@ io.on("connection", async socket => {
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
     socket.on("SearchMess", data => searchMess(data, socket));
+    socket.on("SendReact", data => changeReact(data, socket));
 });
 
 app.set("io", io);

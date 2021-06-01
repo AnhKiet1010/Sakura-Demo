@@ -4,6 +4,7 @@ const Category = require('../models/category.model');
 const Message = require('../models/message.model');
 const { client } = require('../config/lineClient');
 const moment = require("moment");
+const { findOne } = require('../models/user.model');
 
 exports.channelSendMess = async (data, socket) => {
     const { toId, content, type } = data;
@@ -60,4 +61,19 @@ exports.searchMess = async (data, socket) => {
         listMessFilter: listMessFilter,
         searchTotal: count
     });
+}
+
+exports.changeReact = async (data, socket) => {
+    console.log('data', data);
+
+    const { messId, react } = data;
+
+    await Message.findOneAndUpdate({_id: messId}, {react}, (err) => {
+        if(err) {
+            console.log(err);
+        } else {
+            socket.emit("ChangeReact", { messId, react });
+        }
+    });
+
 }

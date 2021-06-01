@@ -21,7 +21,7 @@ import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
 import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
-import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon } from '../icons';
+import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon } from '../icons';
 import { setKeyword } from '../slices/keywordSlice';
 import { setCurrentUser } from '../slices/currentUserSlice';
 import handleEmojiClickOutside from '../helpers/handleEmojiClickOutside';
@@ -74,7 +74,6 @@ function ChatPage() {
                 messAudio.play();
                 changeData();
             }
-            return false;
         });
 
         socket.on("OnChangeListMessBySearch", data => {
@@ -307,7 +306,7 @@ function ChatPage() {
             {
                 currentUser.name !== undefined ? <>
                     <div className={`relative flex-1 flex flex-col bg-primary w-full text-primary overflow-hidden`}>
-                        <div className="border-b-2 bg-primary text-primary flex px-6 py-2 items-center flex-none">
+                        <div className="border-b-2 dark:border-gray-500 bg-primary text-primary flex px-6 py-2 items-center flex-none">
                             <div className="flex items-center">
                                 <div className="m-1 mr-2 w-16 h-16 relative flex justify-center items-center rounded-full bg-gray-500 text-xl">
                                     <img src={currentUser.avatar} className="rounded-full" alt="avatar" />
@@ -332,7 +331,7 @@ function ChatPage() {
                                     </div>
                                 </div>
                             </div>
-                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 ${showProfile ? "hidden" : ""} hover:opacity-100`} onClick={() => setShowProfile(true)}>
+                            <button className={`text-xl ml-4 text-primary focus:outline-none -top-5 right-2 opacity-80 hover:opacity-100`} onClick={() => setShowProfile(true)}>
                                 <MenuIcon className="fill-current h-6 w-6 block text-primary bg-primary hover:text-secondary" />
                             </button>
                         </div>
@@ -365,10 +364,13 @@ function ChatPage() {
                                 <div className="relative text-3xl text-primary p-2 focus:outline-none flex justify-center items-center cursor-pointer" onClick={() => setIsComponentVisible(true)}>
                                     {
                                         isComponentVisible && <span ref={ref} className="absolute bottom-12 left-2">
-                                        <Picker onSelect={addEmoji} />
-                                    </span>
+                                            <Picker onSelect={addEmoji} />
+                                        </span>
                                     }
                                     <SmileIcon className="fill-current h-5 w-5 block hover:text-secondary" />
+                                </div>
+                                <div className="text-3xl text-primary p-2 focus:outline-none flex justify-center items-center cursor-pointer">
+                                    <StickerIcon className="fill-current h-5 w-5 block hover:text-secondary" />
                                 </div>
                                 <div className="text-3xl text-primary p-2 focus:outline-none flex justify-center items-center cursor-pointer">
                                     <MicIcon className="fill-current h-5 w-5 block hover:text-secondary" />

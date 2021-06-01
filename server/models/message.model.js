@@ -29,6 +29,10 @@ const messageSchema = new mongoose.Schema(
     },
     link: {
       type: String
+    },
+    react: {
+      type: String,
+      default: ""
     }
   }
 );

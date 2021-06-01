@@ -81,7 +81,7 @@ function MessFilterPopup({
                                     <th className="p-4 w-1/6 text-right">Time</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-primary text-primary flex flex-col items-center justify-between overflow-y-scroll w-full h-80">
+                            <tbody className="bg-primary text-primary flex flex-col items-center overflow-y-scroll w-full h-80">
                                 {
                                     listMessFilter.length > 0 ?
                                         listMessFilter.map((mess, i) => {

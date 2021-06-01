@@ -8,6 +8,15 @@ import { ReactComponent as CancelIcon } from './cancel.svg';
 import { ReactComponent as MenuIcon } from './menu.svg';
 import { ReactComponent as SearchIcon } from './search.svg';
 import { ReactComponent as SmileIcon } from './smile.svg';
+import { ReactComponent as AngryIcon } from './angry.svg';
+import { ReactComponent as SadIcon } from './sad.svg';
+import { ReactComponent as LoveIcon } from './love.svg';
+import { ReactComponent as SurpriseIcon } from './surprise.svg';
+import { ReactComponent as LikeIcon } from './like.svg';
+import { ReactComponent as HeartIcon } from './heart.svg';
+import { ReactComponent as StickerIcon } from './sticker.svg';
+import { ReactComponent as CheckIcon } from './check.svg';
+
 
 export {
     LightIcon,
@@ -19,5 +28,13 @@ export {
     CancelIcon,
     MenuIcon,
     SearchIcon,
-    SmileIcon
+    SmileIcon,
+    AngryIcon,
+    SadIcon,
+    LoveIcon,
+    SurpriseIcon,
+    LikeIcon,
+    HeartIcon,
+    StickerIcon,
+    CheckIcon
 }
