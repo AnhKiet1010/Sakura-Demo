@@ -4,10 +4,9 @@ const Category = require('../models/category.model');
 const Message = require('../models/message.model');
 const { client } = require('../config/lineClient');
 const moment = require("moment");
-const { findOne } = require('../models/user.model');
 
 exports.channelSendMess = async (data, socket) => {
-    const { toId, content, type } = data;
+    const { toId, content, type, reply } = data;
 
     const message = new Message({
         fromId: 'channel',
@@ -17,6 +16,7 @@ exports.channelSendMess = async (data, socket) => {
         contentId: "",
         time: moment(),
         seen: true,
+        reply
     });
 
     await User.findOneAndUpdate(

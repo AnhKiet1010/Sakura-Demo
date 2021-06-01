@@ -16,6 +16,14 @@ import { ReactComponent as LikeIcon } from './like.svg';
 import { ReactComponent as HeartIcon } from './heart.svg';
 import { ReactComponent as StickerIcon } from './sticker.svg';
 import { ReactComponent as CheckIcon } from './check.svg';
+import { ReactComponent as ReplyIcon } from './reply-right.svg';
+import { ReactComponent as ReplyLeftIcon } from './reply-left.svg';
+import { ReactComponent as EditIcon } from './edit.svg';
+import { ReactComponent as RecallIcon } from './recall.svg';
+import { ReactComponent as MoreIcon } from './more.svg';
+
+
+
 
 
 export {
@@ -36,5 +44,10 @@ export {
     LikeIcon,
     HeartIcon,
     StickerIcon,
-    CheckIcon
+    CheckIcon,
+    ReplyIcon,
+    ReplyLeftIcon,
+    EditIcon,
+    RecallIcon,
+    MoreIcon
 }

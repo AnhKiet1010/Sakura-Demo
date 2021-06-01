@@ -33,6 +33,10 @@ const messageSchema = new mongoose.Schema(
     react: {
       type: String,
       default: ""
+    },
+    reply: {
+      type: String,
+       default: ""
     }
   }
 );

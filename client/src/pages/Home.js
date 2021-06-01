@@ -11,6 +11,7 @@ function Home() {
         onLogout();
         history.push('/login');
     }
+    
     return (
         <div className="bg-red-500 w-full" id="top">
             <header>

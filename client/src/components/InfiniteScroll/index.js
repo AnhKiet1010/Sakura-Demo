@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import LoadingImg from '../../icons/loading.gif';
 import ListMessages from '../ListMessages';
 
-function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, loadingTop, currentUser, word, skip, slideImages }) {
+function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, loadingTop, currentUser, word, skip, slideImages, handleReply }) {
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -59,7 +59,7 @@ function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, l
                     <img src={LoadingImg} alt="loading" />
                 </span>
             }
-            <ListMessages listMessages={listMessages} currentUser={currentUser} word={word} skip={skip} slideImages={slideImages} />
+            <ListMessages listMessages={listMessages} currentUser={currentUser} word={word} skip={skip} slideImages={slideImages} handleReply={handleReply} />
             {hasMoreTop && loadingTop && <span className="text-primary opacity-75 py-8 flex justify-center mx-auto items-center relative w-10 h-6">
                 <img src={LoadingImg} alt="loading" />
             </span>

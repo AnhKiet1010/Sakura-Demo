@@ -26,12 +26,16 @@ import { setKeyword } from '../slices/keywordSlice';
 import { setCurrentUser } from '../slices/currentUserSlice';
 import handleEmojiClickOutside from '../helpers/handleEmojiClickOutside';
 import handleProfileClickOutside from '../helpers/handleProfileClickOutside';
+import ReplyPanel from '../components/ReplyPanel';
+import { onLogout } from '../helpers/auth';
+import { useHistory } from 'react-router';
 
 const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
 
 function ChatPage() {
     const dispatch = useDispatch();
+    const history = useHistory();
     const keyword = useSelector(state => state.keyword);
     const currentUser = useSelector(state => state.currentUser);
     const { theme, setTheme } = useContext(ThemeContext);
@@ -66,6 +70,9 @@ function ChatPage() {
         showProfile,
         setShowProfile
     } = handleProfileClickOutside(false);
+    const [showReplyPanel, setShowReplyPanel] = useState(false);
+    const [replyText, setReplyText] = useState("");
+    const [replyMessId, setReplyMessId] = useState("");
 
 
     useEffect(() => {
@@ -205,6 +212,11 @@ function ChatPage() {
             });
     }
 
+    const handleLogout = () => {
+        onLogout();
+        history.push('/login');
+    }
+
     useEffect(() => {
         updateListMess(currentUser.lineId, limit, skip);
         updateListFriend();
@@ -230,9 +242,13 @@ function ChatPage() {
             socket.emit("ChannelSendMess", {
                 toId: currentUser.lineId,
                 content: reply,
-                type: "text"
+                type: "text",
+                reply: replyMessId
             });
             setReply("");
+            setShowReplyPanel(false);
+            setReplyMessId("");
+            setReplyText("");
         }
     }
 
@@ -251,9 +267,21 @@ function ChatPage() {
         setReply(reply + emoji);
     };
 
+    function handleReply(messId, text) {
+        setReplyText(text);
+        setReplyMessId(messId);
+        setShowReplyPanel(true);
+    }
+
+    function onCloseReplyPanel() {
+        setShowReplyPanel(false);
+        setReplyMessId("");
+        setReplyText("");
+    }
+
     return (
         <div className="relative font-sans antialiased h-screen w-full flex overflow-hidden">
-            <ToastContainer />
+            <ToastContainer preventDuplicates={true} />
             <ResizePanel direction="e" className="border-r-2">
                 <div className="relative z-10 bg-primary text-primary flex-none w-72 min-w-full pb-6 hidden md:block border-r-2 dark:border-gray-500">
                     <div className="mb-4 mt-3 px-4 flex justify-between items-center">
@@ -285,6 +313,9 @@ function ChatPage() {
                         </div>
                         {loadingFr ? <Loading /> : <ListFriends listFriends={listFriends} currentUser={currentUser} onFriendClick={onFriendClick} />}
                     </div>
+                    <button onClick={handleLogout} className="absolute bottom-10 inset-x-1/2 transform -translate-x-2/4 bg-gradient-to-b from-gray-400 to-gray-500  text-white font-bold py-2 px-4 rounded-lg uppercase text-sm  shadow-xl focus:outline-none">
+                        Logout
+                    </button>
                 </div>
             </ResizePanel>
             <MessFilterPopup
@@ -301,7 +332,6 @@ function ChatPage() {
                 handleChangeLimitSearch={handleChangeLimitSearch}
                 handleChangeSkipPrev={handleChangeSkipPrev}
                 handleChangeSkipNext={handleChangeSkipNext}
-
             />
             {
                 currentUser.name !== undefined ? <>
@@ -349,6 +379,7 @@ function ChatPage() {
                                 loadingBottom={loadingBottom}
                                 loadingTop={loadingTop}
                                 slideImages={slideImages}
+                                handleReply={handleReply}
                             />
                         }
 
@@ -376,15 +407,25 @@ function ChatPage() {
                                     <MicIcon className="fill-current h-5 w-5 block hover:text-secondary" />
                                 </div>
                             </div>
-                            <TextareaAutosize
-                                className="bg-primary text-primary w-full px-6 py-2 appearance-none focus:outline-none"
-                                minRows={4}
-                                placeholder={`Send message to ${currentUser.name}`}
-                                onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => {
-                                    setReply(e.target.value);
-                                }}
-                                value={reply}
-                            />
+                            <div>
+                                {
+                                    showReplyPanel &&
+                                    <ReplyPanel
+                                        currentUser={currentUser}
+                                        text={replyText}
+                                        close={onCloseReplyPanel}
+                                    />
+                                }
+                                <TextareaAutosize
+                                    className="bg-primary text-primary w-full pl-8 pr-4 py-2 appearance-none focus:outline-none"
+                                    minRows={4}
+                                    placeholder={`Send message to ${currentUser.name}`}
+                                    onKeyDown={(e) => handleKeyPress(e)} onChange={(e) => {
+                                        setReply(e.target.value);
+                                    }}
+                                    value={reply}
+                                />
+                            </div>
                         </div>
                     </div>
 

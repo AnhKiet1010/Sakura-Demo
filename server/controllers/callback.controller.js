@@ -94,7 +94,7 @@ exports.callbackClient = async (req, res) => {
         }).exec();
     }
 
-    const accessToken = jwt.sign({ accessToken: result.data.access_token }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    const accessToken = jwt.sign({ accessToken: result.data.access_token }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     res.status(200)
         .json({ accessToken, lineId: userId });

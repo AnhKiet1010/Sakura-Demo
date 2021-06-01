@@ -65,6 +65,19 @@ exports.getMessages = async (req, res) => {
     });
 }
 
+exports.getMessageById = async (req, res) => {
+    const { id } = req.body;
+    console.log(req.body);
+    const mess = await Message.findOne({_id: id }).exec();
+    res.status(200).json({
+        errors: [],
+        message: "",
+        data: {
+            mess
+        }
+    });
+}
+
 exports.getImages = async (req, res) => {
     const { id } = req.body;
     console.log(req.body);

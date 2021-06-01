@@ -15,7 +15,7 @@ function App() {
       <Switch>
         <PublicRoute path="/callback" component={Callback} />
         <PublicRoute exact path="/login" component={Login} />
-        <PrivateRoute exact path="/" component={Home} />
+        <PrivateRoute exact path="/" component={ChatPage} />
         <PrivateRoute exact path="/chat" component={ChatPage} />
         <Route component={NotFound} />
       </Switch>
