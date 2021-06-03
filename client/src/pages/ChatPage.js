@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from "reactjs-popup";
@@ -6,7 +6,6 @@ import Aos from 'aos';
 import 'reactjs-popup/dist/index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'aos/dist/aos.css';
-import ResizePanel from "react-resize-panel";
 import { useDispatch, useSelector } from 'react-redux';
 import 'emoji-mart/css/emoji-mart.css';
 import { Picker } from 'emoji-mart';
@@ -15,13 +14,12 @@ import API from '../api/API';
 
 import { ThemeContext } from '../components/themeContext';
 import InfiniteScroll from '../components/InfiniteScroll';
-import ListFriends from '../components/ListFriends';
 import Loading from '../components/Loading';
 import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
 import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
-import { LightIcon, DarkIcon, PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon } from '../icons';
+import { PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon } from '../icons';
 import { setKeyword } from '../slices/keywordSlice';
 import { setCurrentUser } from '../slices/currentUserSlice';
 import handleEmojiClickOutside from '../helpers/handleEmojiClickOutside';
@@ -29,13 +27,14 @@ import handleProfileClickOutside from '../helpers/handleProfileClickOutside';
 import ReplyPanel from '../components/ReplyPanel';
 import { onLogout } from '../helpers/auth';
 import { useHistory } from 'react-router';
+import ChatPageLeft from '../components/ChatPageLeft';
 
 const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
 
 function ChatPage() {
+    const user = JSON.parse(localStorage.getItem('user'));
     const dispatch = useDispatch();
-    const history = useHistory();
     const keyword = useSelector(state => state.keyword);
     const currentUser = useSelector(state => state.currentUser);
     const { theme, setTheme } = useContext(ThemeContext);
@@ -117,7 +116,7 @@ function ChatPage() {
     }
 
     async function updateListFriend() {
-        await API.getListFriend()
+        await API.getListFriend({ userId: user.id })
             .then(res => {
                 if (res.data.error) {
                     toast.error(res.data.message);
@@ -212,11 +211,6 @@ function ChatPage() {
             });
     }
 
-    const handleLogout = () => {
-        onLogout();
-        history.push('/login');
-    }
-
     useEffect(() => {
         updateListMess(currentUser.lineId, limit, skip);
         updateListFriend();
@@ -282,42 +276,14 @@ function ChatPage() {
     return (
         <div className="relative font-sans antialiased h-screen w-full flex overflow-hidden">
             <ToastContainer preventDuplicates={true} />
-            <ResizePanel direction="e" className="border-r-2">
-                <div className="relative z-10 bg-primary text-primary flex-none w-72 min-w-full pb-6 hidden md:block border-r-2 dark:border-gray-500">
-                    <div className="mb-4 mt-3 px-4 flex justify-between items-center">
-                        <div className="flex-auto">
-                            <h1 className="font-semibold text-2xl leading-tight mb-1 truncate">Sakura Chat</h1>
-                        </div>
-                        <div>
-                            <label htmlFor="toogleA" className="flex items-center cursor-pointer">
-                                <div className="relative w-full">
-                                    <input id="toogleA" type="checkbox" className="sr-only" onChange={e => setTheme(e.target.checked ? "dark" : "light")} checked={isDark()} />
-                                    <div className="w-10 h-4 bg-gray-400 rounded-full shadow-inner" />
-                                    <div className="dot absolute w-6 h-6 p-1 bg-primary text-primary rounded-full shadow -left-1 -top-1 transition flex items-center justify-center">
-                                        {isDark() && <DarkIcon />}
-                                        {!isDark() && <LightIcon />}
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="mb-8">
-                        <div className="px-4 mb-2 text-white flex justify-between items-center">
-                            <div className="relative w-full">
-                                <input type="text" placeholder="Search..." className="border w-full border-grey rounded-lg pl-8 pr-4 py-2 text-gray-600 focus:outline-none" />
-                                <div className="absolute top-3 right-3 pl-3 flex items-center justify-center">
-                                    <SearchIcon className="fill-current text-gray-500 h-4 w-4" />
-                                </div>
-                            </div>
-                        </div>
-                        {loadingFr ? <Loading /> : <ListFriends listFriends={listFriends} currentUser={currentUser} onFriendClick={onFriendClick} />}
-                    </div>
-                    <button onClick={handleLogout} className="absolute bottom-10 inset-x-1/2 transform -translate-x-2/4 bg-gradient-to-b from-gray-400 to-gray-500  text-white font-bold py-2 px-4 rounded-lg uppercase text-sm  shadow-xl focus:outline-none">
-                        Logout
-                    </button>
-                </div>
-            </ResizePanel>
+            <ChatPageLeft
+                setTheme={setTheme}
+                isDark={isDark}
+                loadingFr={loadingFr}
+                listFriends={listFriends}
+                onFriendClick={onFriendClick}
+            
+            />
             <MessFilterPopup
                 showListFilterMess={showListFilterMess}
                 onClose={onCloseSearchPopup}

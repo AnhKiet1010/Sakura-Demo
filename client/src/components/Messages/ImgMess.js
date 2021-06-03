@@ -6,7 +6,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import ShowImg from '../ShowImg';
 import { formatTime } from '../../helpers/format';
 
-function SelfImgMess({ images, seen, time, avatar, slideImages, onClose }) {
+function SelfImgMess({ images, seen, time, avatar, slideImages }) {
 
     const calcTime = formatTime(time);
 

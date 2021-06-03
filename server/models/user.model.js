@@ -4,16 +4,22 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     lineId : {
-        type: String
+        type: String,
+        default: ""
+    },
+    password: {
+      type: String
     },
     name: {
       type: String,
+      default: "User"
     },
     avatar: {
         type: String
     },
     statusMessage: {
-        type: String
+        type: String,
+        default: ""
     },
     email: {
         type: String
@@ -22,7 +28,8 @@ const userSchema = new mongoose.Schema(
         type: String
     },
     lastMess: {
-      type: String
+      type: String,
+      default: ""
     }
   }
 );

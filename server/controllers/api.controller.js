@@ -26,7 +26,9 @@ exports.store = async (req, res) => {
 }
 
 exports.getFriends = async (req, res) => {
-    const listFriends = await User.find({}).sort({ lastTime: 1 }).exec();
+    const { userId } = req.body;
+    console.log('id', userId);
+    const listFriends = await User.find({_id: {$ne: userId}}).sort({ lastTime: -1 }).exec();
 
     var result = [];
     for (let i = 0; i < listFriends.length; i++) {

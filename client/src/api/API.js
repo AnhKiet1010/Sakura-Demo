@@ -27,8 +27,8 @@ API.switchServer = () => {
     API.instance = getInstance();
 };
 
-API.getListFriend = () => {
-    return API.instance.get(URL_API_FRIENDS_LIST);
+API.getListFriend = (body) => {
+    return API.instance.post(URL_API_FRIENDS_LIST, body);
 };
 
 API.getListMessages = (body) => {

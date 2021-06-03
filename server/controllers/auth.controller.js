@@ -1,12 +1,83 @@
 const axios = require('axios');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const User = require('../models/user.model');
 const Store = require('../models/store.model');
 const Category = require('../models/category.model');
 
 const qs = require('qs');
 
-exports.index = async (req, res) => {
-    res.send("Server connected!!!");
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({email}).exec();
+
+    if(!user) {
+        res.json({
+            status: 401,
+            message: "Email does not exist",
+            errors: [{field: 'email'}]
+        })
+    } else {
+        bcrypt.compare(password, user.password, function(err, result) {
+            if(!result) {
+                res.json({
+                    status: 401,
+                    message: "Password does not match",
+                    errors: [{field: 'password'}]
+                })
+            } else {
+                const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+                res.json({
+                    status: 200,
+                    data: { accessToken, userInfo: {
+                        name: user.name,
+                        avatar: user.avatar,
+                        email: user.email,
+                        id: user._id
+                    } }
+                })
+            }
+        })
+    }
+};
+
+exports.register = async (req, res) => {
+    const { email, password } = req.body;
+
+    const repeat_user = await User.findOne({email}).exec();
+
+    if(repeat_user) {
+        return res.json({
+            status: 409,
+            message: "Email is used",
+            errors: [{field: 'email'}]
+        });
+    }
+
+    bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.hash(password, salt, async function (err, hash) {
+            if(err) console.log(err);
+
+            if(!err) {
+                const newuser = new User({
+                    email,
+                    password: hash
+                });
+    
+                await newuser.save((err) => {
+                    if(err) {
+                        console.log(err);
+                    }
+                    return res.json({
+                        status: 200,
+                        message: "Register successful!"
+                    });
+                });
+            }
+        });
+    });
 };
 
 exports.createStorePost = async (req, res) => {
@@ -27,8 +98,8 @@ exports.createStorePost = async (req, res) => {
         category
     });
 
-    await store.save(function(err) {
-        if(err) {
+    await store.save(function (err) {
+        if (err) {
             console.log(err);
         }
     });
@@ -77,24 +148,5 @@ exports.createRichMenuForm = async (req, res) => {
         }
     } else {
         res.redirect('/login');
-    }
-}
-
-exports.logout = async (req, res) => {
-    if (req.cookies.access_token) {
-        await axios({
-            method: "POST",
-            url: "https://api.line.me/oauth2/v2.1/revoke",
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-            },
-            data: qs.stringify({
-                'client_id': process.env.CLIENT_ID,
-                'client_secret': process.env.CLIENT_SECRET,
-                'access_token': req.cookies.access_token
-            })
-        });
-        res.clearCookie('access_token');
-        res.clearCookie('id');
     }
 }

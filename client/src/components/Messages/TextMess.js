@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { formatTime, formatText } from '../../helpers/format';
 import socket from '../../helpers/socketConnect';
-import { LoveIcon, AngryIcon, SadIcon, LikeIcon, SurpriseIcon, HeartIcon, CheckIcon, ReplyLeftIcon, EditIcon, RecallIcon, MoreIcon } from '../../icons';
+import { LoveIcon, AngryIcon, SadIcon, LikeIcon, SurpriseIcon, HeartIcon, CheckIcon, ReplyLeftIcon, EditIcon, RecallIcon, MoreIcon, CancelIcon } from '../../icons';
 import API from '../../api/API';
 
 function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply }) {
@@ -47,9 +47,9 @@ function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply 
     return (
         <div className="flex items-start mb-8 text-sm">
             <img src={avatar} className="w-10 h-10 rounded-full mr-3" alt="avatar" />
-            <div className="relative flex items-end"
+            <div className="relative flex items-end text-mess-frame"
                 onMouseEnter={() => setShowReact(true)}
-                onMouseLeave={() => { setShowReact(false); setOnHoverReaction(false)}}
+                onMouseLeave={() => { setShowReact(false); setOnHoverReaction(false) }}
             >
                 <div className="relative text-gray-800 leading-normal bg-gray-200 dark:bg-gray-300 rounded-lg px-4 py-3 m-0 max-w-lg">
                     {
@@ -76,10 +76,25 @@ function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply 
                             </div>
                         </div>
                     }
+                    {
+                        showReact &&
+                        <div className="absolute -top-2 -right-2">
+                            <div className=" bg-red-500 p-1 rounded-full w-5 h-5 flex items-center justify-center text-white" onClick={() => handleClickReact("")}>
+                                <CancelIcon className="react-icon w-2 h-2 hover:opacity-50 cursor-pointer fill-current" />
+                            </div>
+                        </div>
+                    }
                 </div>
-                <div className="flex">
-                    <div className={`flex ml-2 bg-secondary py-2 px-1 rounded-lg ${!showReact && "hidden"} overflow-hidden`}>
-                        <div onClick={() => setOnHoverReaction(!onHoverReaction)}><MoreIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                <div className={`flex ${!showReact && "hidden"}`}>
+                    <div className={`flex ml-2 bg-secondary py-2 px-1 rounded-lg overflow-hidden`}>
+                        <div onClick={() => setOnHoverReaction(!onHoverReaction)}>
+                            {
+                                onHoverReaction ?
+                                    <CancelIcon className="react-icon w-5 h-5 mx-1 fill-current hover:text-blue-500 cursor-pointer" />
+                                    :
+                                    <MoreIcon className="react-icon w-5 h-5 mx-1 hover:text-blue-500 cursor-pointer" />
+                            }
+                        </div>
                         {
                             onHoverReaction &&
                             <>
@@ -93,17 +108,17 @@ function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply 
                         }
                     </div>
                     <div className="ml-2">
-                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer ${!showReact && "hidden"}`} onClick={() => handleReply(messId, text)}>
+                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
                             <ReplyLeftIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
                         </div>
                     </div>
                     <div className="ml-2">
-                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer ${!showReact && "hidden"}`} onClick={() => handleReply(messId, text)}>
+                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
                             <EditIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
                         </div>
                     </div>
                     <div className="ml-2">
-                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer ${!showReact && "hidden"}`} onClick={() => handleReply(messId, text)}>
+                        <div className={`bg-secondary rounded-lg text-3xl text-primary p-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
                             <RecallIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
                         </div>
                     </div>

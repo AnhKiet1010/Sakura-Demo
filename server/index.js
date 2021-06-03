@@ -38,8 +38,15 @@ io.on("connection", async socket => {
 
 app.set("io", io);
 
+app.get("/", (req,res) => {
+    res.send("Server connected");
+});
+
+const userRouter = require("./routes/user.route");
+app.use("/user", userRouter);
+
 const authRouter = require("./routes/auth.route");
-app.use("/", authRouter);
+app.use("/auth", authRouter);
 
 const callbackRouter = require("./routes/callback.route");
 app.use('/callback', callbackRouter);

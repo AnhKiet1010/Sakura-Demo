@@ -14,7 +14,7 @@ export const AccessTokenInterceptor = {
         return { ...config, headers };
     },
     onRejected: (error) => {
-        return Promise.reject(error);
+        return console.log(error.response);
     },
 };
 
