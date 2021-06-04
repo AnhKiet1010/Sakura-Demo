@@ -1,18 +1,22 @@
+import {useSelector} from 'react-redux';
+
 import SelfMess from '../Messages/SelfMess';
 import TextMess from '../Messages/TextMess';
 import SelfImgMess from '../Messages/SelfImgMess';
 import ImgMess from '../Messages/ImgMess';
 import AudioMess from '../Messages/AudioMess';
 import SelfVideoMess from '../Messages/SelfVideoMess';
+import { useEffect, useState } from 'react';
 
-function ListMessages({ listMessages, currentUser, word, slideImages, handleReply }) {
+function ListMessages({ currentUser, word, slideImages, handleReply }) {
+    const listMessages = useSelector(state => state.listMessages);
 
     return (
         <>
             {
                 listMessages.map((mess, i) => {
                     let result = "";
-                    if (mess.fromId === currentUser.lineId) {
+                    if (mess.author === currentUser._id) {
                         if (mess.type === 'image') {
                             result = <ImgMess key={i} time={mess.time} images={mess.images} seen={mess.seen} avatar={currentUser.avatar} slideImages={slideImages} />
                         } else if (mess.type === 'audio') {

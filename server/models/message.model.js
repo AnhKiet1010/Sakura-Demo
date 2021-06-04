@@ -3,13 +3,10 @@ const mongoose = require('mongoose');
 // Mess schema
 const messageSchema = new mongoose.Schema(
   {
-    fromId : {
+    receive : {
         type: String
     },
-    toId: {
-      type: String
-    },
-    contentId: {
+    author: {
       type: String
     },
     time: {

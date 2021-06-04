@@ -6,6 +6,8 @@ const Message = require('../models/message.model');
 const client = require('../config/lineClient');
 const { cloudUploadImage, cloudUploadAudio } = require('../middlewares/cloudinary');
 const LINE = require('../LINE-api/API');
+const Conver = require('../models/conversation.model');
+const mongoose = require('mongoose');
 
 
 exports.category = async (req, res) => {
@@ -27,16 +29,17 @@ exports.store = async (req, res) => {
 
 exports.getFriends = async (req, res) => {
     const { userId } = req.body;
-    console.log('id', userId);
-    const listFriends = await User.find({_id: {$ne: userId}}).sort({ lastTime: -1 }).exec();
+    const listFriends = await User.find({_id: {$ne: userId}}).sort({ online: -1, lastActivity: -1  }).exec();
 
     var result = [];
     for (let i = 0; i < listFriends.length; i++) {
-        let fri = listFriends[i];
-        const ls = await Message.find({ $and: [{ seen: false }, { toId: 'channel' }, { fromId: fri.lineId }] }).exec();
+        let fr = listFriends[i];
+        let countUnReadMess = await Message.countDocuments({ $and: [{author: fr._id}, {receive: userId}, {seen: false} ] }).exec();
+        let conver = await Conver.findOne({members: {$all: [mongoose.Types.ObjectId(userId), mongoose.Types.ObjectId(fr._id)]}}).exec();
         let friendObj = {
-            friendData: fri,
-            unReadMess: ls.length
+            friendData: fr,
+            unReadCount: countUnReadMess,
+            conver
         };
         result.push(friendObj);
     }
@@ -51,11 +54,10 @@ exports.getFriends = async (req, res) => {
 }
 
 exports.getMessages = async (req, res) => {
-    const { id, skip, limit } = req.body;
-    console.log(req.body);
-    await Message.updateMany({ $and: [{ fromId: id }, { toId: 'channel' }] }, { seen: true }).exec();
-    const listMess = await Message.find({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }] }, { $and: [{ fromId: 'channel', toId: id }] }] }).skip(skip < 0 ? 0 : skip).limit(limit).sort({ _id: -1 }).exec();
-    const countMess = await Message.countDocuments({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }] }, { $and: [{ fromId: 'channel', toId: id }] }] }).exec();
+    const { frId, userId, skip, limit } = req.body;
+    await Message.updateMany({$and: [{author: frId, receive: userId}]} , { seen: true }).exec();
+    const listMess = await Message.find({ $or: [{$and: [{author: userId},{receive: frId}]}, {$and: [{author: frId},{receive: userId}]} ] }).skip(skip < 0 ? 0 : skip).limit(limit).sort({ _id: -1 }).exec();
+    const countMess = await Message.countDocuments({ $or: [{$and: [{author: userId},{receive: frId}]}, {$and: [{author: frId},{receive: userId}]} ] }).exec();
     res.status(200).json({
         errors: [],
         message: "",

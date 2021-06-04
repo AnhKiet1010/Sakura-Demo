@@ -20,14 +20,17 @@ function Callback() {
         if (state === 'success') {
             AUTH.callback(body)
                 .then((res) => {
-                    console.log("data", res.data);
-                    onLogin(res.data.accessToken, res.data.lineId);
-                    history.push("/");
+                    let { status, message, errors, data } = res.data;
+                    console.log(res.data);
+                    if (status === 200) {
+                        onLogin(data.accessToken, data.userInfo);
+                        history.push('/chat');
+                    }
                 }).catch(err => {
                     console.log('error', err);
                 })
         }
-    },[]);
+    }, []);
 
     return (
         <div className="w-full h-full fixed block top-0 left-0 bg-white opacity-75 z-50">

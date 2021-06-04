@@ -16,7 +16,7 @@ function Self({ messId, text, seen, time, react, reply, handleReply }) {
     const calcTime = formatTime(time);
 
     const handleClickReact = (reactIndex) => {
-        socket.emit("SendReact", { messId, react: reactIndex });
+        socket.emit("SendReact", { messId, react: reactIndex, id: currentUser._id });
         setShowReact(false);
     }
 
@@ -33,18 +33,21 @@ function Self({ messId, text, seen, time, react, reply, handleReply }) {
         }
     }, [messId]);
 
-
-
     useEffect(() => {
 
         socket.on("ChangeReact", data => {
-            console.log('data', data);
-            setCurrentReact(data.react);
+            console.log(data);
+            const { changeMess, react } = data;
+
+            if (changeMess._id === messId) {
+                setCurrentReact(react);
+            }
         });
 
         return () => {
             socket.off("ChangeReact");
         }
+
     });
 
     return (

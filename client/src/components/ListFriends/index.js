@@ -1,14 +1,13 @@
 import FriendItem from './FriendItem';
+import { useSelector } from 'react-redux';
 
+function ListFriends({onFriendClick}) {
+    const listFriends = useSelector(state => state.listFriends);
 
-function ListFriends({listFriends, onFriendClick, currentUser}) {
-
-    
     return (
         <>
         {
             listFriends.map((friend, i) => {
-                
                 return (
                     <FriendItem
                         key={i}
@@ -16,10 +15,11 @@ function ListFriends({listFriends, onFriendClick, currentUser}) {
                         name={friend.friendData.name}
                         avatar={friend.friendData.avatar}
                         // lastTime={`${(new Date(friend.friendData.lastTime)).getHours()}:${(new Date(friend.friendData.lastTime).getMinutes())}`}
-                        lastTime={friend.friendData.lastTime}
-                        active={currentUser.lineId === friend.friendData.lineId}
-                        unReadMess={friend.unReadMess}
-                        lastMess={friend.friendData.lastMess}
+                        lastTime={friend.friendData.lastActivity}
+                        unReadMess={friend.unReadCount}
+                        lastMess={friend.conver.lastMess}
+                        online={friend.friendData.online}
+                        frId={friend.friendData._id}
                     />
                 );
             })

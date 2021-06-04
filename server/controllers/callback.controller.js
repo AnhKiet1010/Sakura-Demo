@@ -61,19 +61,20 @@ exports.callbackClient = async (req, res) => {
         }
     });
 
-    const { userId, displayName, pictureUrl, statusMessage } = userInfo.data;
+    const { userId, displayName, pictureUrl } = userInfo.data;
 
-    const savedUser = await User.findOne({ lineId: userId }).exec();
+    const savedUser = await User.find({ 'socialInfo.socialId': userId }).exec();
 
-    if (!savedUser) {
-        const user = new User({
-            lineId: userId,
+    if (savedUser.length === 0) {
+        var user = new User({
+            socialRegister: true,
+            socialInfo: {
+                socialName: 'line',
+                socialId: userId,
+            },
             name: displayName,
             avatar: pictureUrl,
-            statusMessage,
-            email: userInfo1.data.email,
-            lastTime: new Date(),
-            lastMess: ""
+            email: userInfo1.data.email
         });
 
 
@@ -85,19 +86,43 @@ exports.callbackClient = async (req, res) => {
             }
         });
 
+        const accessToken = jwt.sign({ accessToken: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+        res.json({
+            status: 200,
+            data: {
+                accessToken, userInfo: {
+                    name: user.name,
+                    avatar: user.avatar,
+                    email: user.email,
+                    id: user._id
+                }
+            }
+        })
+
     } else {
-        await User.findOneAndUpdate({ lineId: userId }, {
+        await User.findOneAndUpdate({ 'socialInfo.socialId': userId }, {
             name: displayName,
             avatar: pictureUrl,
-            statusMessage,
             email: userInfo1.data.email
         }).exec();
+
+        const getUser = (await User.find({ 'socialInfo.socialId': userId }).exec())[0];
+
+        const accessToken = jwt.sign({ accessToken: getUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+        res.json({
+            status: 200,
+            data: {
+                accessToken, userInfo: {
+                    name: getUser.name,
+                    avatar: getUser.avatar,
+                    email: getUser.email,
+                    id: getUser._id
+                }
+            }
+        })
     }
-
-    const accessToken = jwt.sign({ accessToken: result.data.access_token }, process.env.JWT_SECRET, { expiresIn: '24h' });
-
-    res.status(200)
-        .json({ accessToken, lineId: userId });
 }
 
 exports.callbackWebHook = async (req, res) => {
@@ -238,7 +263,7 @@ async function handleEvent(event, io) {
             ).exec();
 
             io.emit("UserSendMess", { id: event.source.userId });
-        } else if(event.message.type === 'audio') {
+        } else if (event.message.type === 'audio') {
 
             await fs.unlink("./public/uploads/audio.m4a", (err) => {
                 if (err) {

@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react';
+import { useSelector } from "react-redux";
 
 import LoadingImg from '../../icons/loading.gif';
+import TypingImg from '../../icons/typing.svg';
 import ListMessages from '../ListMessages';
 
 function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, loadingTop, currentUser, word, skip, slideImages, handleReply }) {
     const messagesEndRef = useRef(null);
+    const typing = useSelector(state => state.typing);
 
     useEffect(() => {
 
@@ -48,11 +51,10 @@ function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, l
         }
     }
 
-    const bind = useSmoothScrollTo('');
-
 
     return (
-        <div className="pr-6 pl-8 pb-4 pt-10 flex-1 flex flex-col-reverse overflow-y-scroll h-full" id="scrollAbleDiv" onScroll={handleScroll}>
+        <div className="relative pr-6 pl-8 pb-4 pt-10 flex-1 flex flex-col-reverse overflow-y-scroll h-full" id="scrollAbleDiv" onScroll={handleScroll}>
+            { typing.state && typing.id === currentUser._id && <div className="absolute bottom-0 left-2 flex items-center bg-secondary px-3 py-1 text-primary opacity-70 animate__animated animate__fadeIn">{currentUser.name} is typing<img src={TypingImg} alt="loading" className="w-10 h-6" /></div>}
             {skip === 0 && <div ref={messagesEndRef} className="" />}
             {
                 hasMoreBot && loadingBottom && <span className="text-primary opacity-75 py-4 flex  justify-center mx-auto items-center relative w-10 h-6">
@@ -64,7 +66,7 @@ function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, l
                 <img src={LoadingImg} alt="loading" />
             </span>
             }
-            {!hasMoreTop && <div className="flex py-8 items-center text-center">
+            {!hasMoreTop && skip !== 0 && <div className="flex py-8 items-center text-center">
                 <hr className="border-gray-300 border-1 w-full rounded-md" />
                 <label className="block font-medium text-sm text-primary w-full">
                     Yay! You have seen it all

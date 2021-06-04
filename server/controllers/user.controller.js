@@ -10,14 +10,19 @@ exports.update = async (req,res) => {
         id
     } = req.body;
 
+    console.log('body', req.body);
+    
     if(req.file) {
         let uploadedFilePath = await cloudUploadImage(req.file.path);
         var avatar = uploadedFilePath;
+        await User.findOneAndUpdate({_id: id}, {avatar}).exec();
     }
-
-    await User.findOneAndUpdate({_id: id}, {name, avatar}).exec();
-
+    
+    await User.findOneAndUpdate({_id: id}, {name}).exec();
+    
     const user = await User.findOne({_id: id}).exec();
+
+    console.log('result user', user);
 
     res.json({
         status: 200,

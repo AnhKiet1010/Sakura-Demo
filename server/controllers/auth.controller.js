@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const Store = require('../models/store.model');
 const Category = require('../models/category.model');
+const Conver = require('../models/conversation.model');
 
 const qs = require('qs');
 
@@ -65,6 +66,22 @@ exports.register = async (req, res) => {
                     email,
                     password: hash
                 });
+
+                const listFr = await User.find({}).exec();
+                console.log('list friends to conver', listFr);
+
+                listFr.forEach(async fr => {
+                    let members = [];
+                    members.push(newuser._id);
+                    members.push(fr._id);
+
+                    let newConver = new Conver({
+                        members
+                    });
+
+                    await newConver.save((err) => console.log(err));
+                });
+
     
                 await newuser.save((err) => {
                     if(err) {

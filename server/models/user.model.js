@@ -3,34 +3,39 @@ const mongoose = require('mongoose');
 // user schema
 const userSchema = new mongoose.Schema(
   {
-    lineId : {
-        type: String,
-        default: ""
+    socialRegister: {
+      type: Boolean,
+      default: false
     },
-    password: {
-      type: String
+    socialInfo: {
+      socialName: String,
+      socialId: String
     },
+    password: String,
     name: {
       type: String,
       default: "User"
     },
     avatar: {
-        type: String
-    },
-    statusMessage: {
-        type: String,
-        default: ""
-    },
-    email: {
-        type: String
-    },
-    lastTime: {
-        type: String
-    },
-    lastMess: {
       type: String,
-      default: ""
-    }
+      default: "https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png"
+    },
+    email: String,
+    lastActivity: {
+      type: Date,
+      default: new Date()
+    },
+    online: {
+      type: Boolean,
+      default: false
+    },
+    contacts: {
+      type: Array,
+      default: []
+    },
+    socketId: {
+      type: String
+    },
   }
 );
 

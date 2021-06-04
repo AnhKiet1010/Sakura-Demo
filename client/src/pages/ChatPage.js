@@ -21,11 +21,13 @@ import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
 import { PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon } from '../icons';
 import { setKeyword } from '../slices/keywordSlice';
+import { setTyping } from '../slices/typingSlice';
 import { setCurrentUser } from '../slices/currentUserSlice';
+import { setListFriends } from '../slices/listFriendsSlice';
+import { setListMessages } from '../slices/listMessagesSlice';
 import handleEmojiClickOutside from '../helpers/handleEmojiClickOutside';
 import handleProfileClickOutside from '../helpers/handleProfileClickOutside';
 import ReplyPanel from '../components/ReplyPanel';
-import { onLogout } from '../helpers/auth';
 import { useHistory } from 'react-router';
 import ChatPageLeft from '../components/ChatPageLeft';
 
@@ -38,8 +40,6 @@ function ChatPage() {
     const keyword = useSelector(state => state.keyword);
     const currentUser = useSelector(state => state.currentUser);
     const { theme, setTheme } = useContext(ThemeContext);
-    const [listFriends, setListFriends] = useState([]);
-    const [listMessages, setListMessages] = useState([]);
     const [reply, setReply] = useState("");
     const [loadingBottom, setLoadingBottom] = useState(false);
     const [loadingTop, setLoadingTop] = useState(false);
@@ -75,11 +75,13 @@ function ChatPage() {
 
 
     useEffect(() => {
-        socket.on("UserSendMess", data => {
-            if (currentUser.lineId !== data.id || data.id !== 'channel') {
-                messAudio.play();
-                changeData();
-            }
+        socket.on("UserSendMessToChangeData", (data) => {
+            changeData();
+        });
+
+        socket.on("UserSendMessToUser", () => {
+            messAudio.play();
+            changeData();
         });
 
         socket.on("OnChangeListMessBySearch", data => {
@@ -88,9 +90,46 @@ function ChatPage() {
             console.log("listFilter", listMessFilter);
         });
 
+        socket.on("UserStateChange", () => {
+            changeData();
+        });
+
+        socket.on("ChangeMessStatusToSeen", (data) => {
+            if (data.id === currentUser._id) {
+                updateListMess();
+            }
+        });
+
+        socket.on("ChangeMessStatusToSeen", (data) => {
+            if (data.id === currentUser._id) {
+                updateListMess();
+            }
+        });
+
+        socket.on("SetStartTyping", (data) => {
+            const action = setTyping({
+                state: true,
+                id: data.id
+            });
+            dispatch(action);
+        });
+
+        socket.on("SetEndTyping", (data) => {
+            const action = setTyping({
+                state: false,
+                id: ""
+            });
+            dispatch(action);
+        });
+
         return () => {
-            socket.off("UserSendMess");
+            socket.off("UserSendMessToChangeData");
+            socket.off("UserSendMessToUser");
             socket.off("OnChangeListMessBySearch");
+            socket.off("UserStateChange");
+            socket.off("ChangeMessStatusToSeen");
+            socket.off("SetStartTyping");
+            socket.off("SetEndTyping");
         }
     });
 
@@ -102,13 +141,13 @@ function ChatPage() {
         return theme === "dark";
     }
 
-    async function updateListMess(id, limit, skip) {
-        const body = { id, limit, skip };
+    async function updateListMess() {
+        const body = { frId: currentUser._id, userId: user.id, limit, skip };
         await API.getListMessages(body)
             .then(res => {
-                console.log(res.data.data);
                 const { listMess, hasMoreTop, hasMoreBot } = res.data.data;
-                setListMessages(listMess);
+                let action = setListMessages(listMess);
+                dispatch(action);
                 setHasMoreTop(hasMoreTop);
                 setHasMoreBot(hasMoreBot);
             });
@@ -121,7 +160,8 @@ function ChatPage() {
                 if (res.data.error) {
                     toast.error(res.data.message);
                 } else {
-                    setListFriends(res.data.data.listFriends);
+                    let action = setListFriends(res.data.data.listFriends);
+                    dispatch(action);
                 }
             }).catch(err => {
                 console.log(err);
@@ -188,14 +228,14 @@ function ChatPage() {
         changeData();
     }
 
-    const onFriendClick = (user) => {
+    const onFriendClick = (friend) => {
         setLoadingMess(true);
         setLimit(envLimit);
         setHasMoreTop(true);
         setHasMoreBot(false);
-        let action = setCurrentUser(user);
+        let action = setCurrentUser(friend);
+        socket.emit("UserSeenMess", { ofId: friend._id, fromId: user.id });
         dispatch(action);
-
     }
 
     function changeData() {
@@ -212,9 +252,9 @@ function ChatPage() {
     }
 
     useEffect(() => {
-        updateListMess(currentUser.lineId, limit, skip);
         updateListFriend();
-        UpdateListImagesMess(currentUser.lineId);
+        updateListMess();
+        UpdateListImagesMess(currentUser._id);
     }, [currentUser, isChangeData]);
 
     useEffect(() => {
@@ -223,6 +263,7 @@ function ChatPage() {
         setLimit(envLimit);
         updateListFriend();
         Aos.init({});
+        socket.emit("UserOnline", { id: user.id });
     }, []);
 
 
@@ -234,7 +275,8 @@ function ChatPage() {
         } else if (e.nativeEvent.keyCode === 13) {
             e.preventDefault();
             socket.emit("ChannelSendMess", {
-                toId: currentUser.lineId,
+                fromId: user.id,
+                toId: currentUser._id,
                 content: reply,
                 type: "text",
                 reply: replyMessId
@@ -273,6 +315,14 @@ function ChatPage() {
         setReplyText("");
     }
 
+    function onFocusInput() {
+        socket.emit("UserStartTyping", { fromId: user.id, toId: currentUser._id });
+    }
+
+    function onBlurInput() {
+        socket.emit("UserEndTyping", { fromId: user.id, toId: currentUser._id });
+    }
+
     return (
         <div className="relative font-sans antialiased h-screen w-full flex overflow-hidden">
             <ToastContainer preventDuplicates={true} />
@@ -280,9 +330,7 @@ function ChatPage() {
                 setTheme={setTheme}
                 isDark={isDark}
                 loadingFr={loadingFr}
-                listFriends={listFriends}
                 onFriendClick={onFriendClick}
-            
             />
             <MessFilterPopup
                 showListFilterMess={showListFilterMess}
@@ -305,8 +353,8 @@ function ChatPage() {
                         <div className="border-b-2 dark:border-gray-500 bg-primary text-primary flex px-6 py-2 items-center flex-none">
                             <div className="flex items-center">
                                 <div className="m-1 mr-2 w-16 h-16 relative flex justify-center items-center rounded-full bg-gray-500 text-xl">
-                                    <img src={currentUser.avatar} className="rounded-full" alt="avatar" />
-                                    {/* <div className="absolute right-0.5 top-0.5 w-2.5 h-2.5 rounded-full bg-green-500" /> */}
+                                    <img src={currentUser.avatar} className={`rounded-full border ${currentUser.online ? "border-green-500" : "border-gray-300"} w-full h-full object-cover`} alt="avatar" />
+                                    {currentUser.online && <div className="absolute right-1 top-1 w-3 h-3 rounded-full bg-green-500 border" />}
                                 </div>
                                 <div className="flex flex-col">
                                     <span className=" text-lg font-bold mb-1">{currentUser.name}</span>
@@ -335,7 +383,6 @@ function ChatPage() {
                         {
                             loadingMess ? <Loading /> : <InfiniteScroll
                                 loading={false}
-                                listMessages={listMessages}
                                 fetchMoreMess={fetchMoreMess}
                                 hasMoreTop={hasMoreTop}
                                 hasMoreBot={hasMoreBot}
@@ -390,6 +437,9 @@ function ChatPage() {
                                         setReply(e.target.value);
                                     }}
                                     value={reply}
+                                    onFocus={onFocusInput}
+                                    onBlur={onBlurInput}
+                                    autoFocus={false}
                                 />
                             </div>
                         </div>

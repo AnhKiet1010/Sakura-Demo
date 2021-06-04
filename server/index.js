@@ -25,11 +25,20 @@ const connectDB = require("./config/db");
 // Connect to database
 connectDB();
 
-const { channelSendMess, searchMess, changeReact } = require("./controllers/socket.controller");
+const { channelSendMess, searchMess, changeReact, handleOnlineStatus, handleOfflineStatus, handleUserSeenMess, handleUserStartTyping, handleUserEndTyping } = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
     // show connect id in server
     console.log('NEW CONNECTION : ', socket.id);
+
+    socket.on('disconnect', () => handleOfflineStatus(socket.id, socket));
+
+    socket.on("UserOnline", data => handleOnlineStatus(data, socket));
+
+    socket.on("UserSeenMess", data => handleUserSeenMess(data,socket));
+
+    socket.on("UserStartTyping", data => handleUserStartTyping(data,socket));
+    socket.on("UserEndTyping", data => handleUserEndTyping(data, socket));
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
     socket.on("SearchMess", data => searchMess(data, socket));

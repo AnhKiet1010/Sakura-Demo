@@ -5,7 +5,7 @@ import socket from '../../helpers/socketConnect';
 import { LoveIcon, AngryIcon, SadIcon, LikeIcon, SurpriseIcon, HeartIcon, CheckIcon, ReplyLeftIcon, EditIcon, RecallIcon, MoreIcon, CancelIcon } from '../../icons';
 import API from '../../api/API';
 
-function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply }) {
+function TypeText({ messId, seen, time, text, react, handleReply, reply }) {
     const [showReact, setShowReact] = useState(false);
     const [currentReact, setCurrentReact] = useState("");
     const [replyMess, setReplyMess] = useState({});
@@ -15,15 +15,28 @@ function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply 
     const calcTime = formatTime(time);
 
     const handleClickReact = (reactIndex) => {
-        socket.emit("SendReact", { messId, react: reactIndex });
+        socket.emit("SendReact", { messId, react: reactIndex, id: currentUser._id });
         setShowReact(false);
     }
+    useEffect(() => {
+
+        socket.on("ChangeReact", data => {
+            console.log(data);
+            const { changeMess, react } = data;
+
+            setCurrentReact(react);
+        });
+
+        return () => {
+            socket.off("ChangeReact");
+        }
+
+    });
 
     useEffect(async () => {
         setCurrentReact(react);
 
         if (reply && reply !== "") {
-            console.log("reply", reply);
             await API.messagesDetail({ id: reply })
                 .then(res => {
                     console.log("result", res);
@@ -32,21 +45,9 @@ function TypeText({ messId, avatar, seen, time, text, react, handleReply, reply 
         }
     }, [messId]);
 
-    useEffect(() => {
-
-        socket.on("ChangeReact", data => {
-            console.log('data', data);
-            setCurrentReact(data.react);
-        });
-
-        return () => {
-            socket.off("ChangeReact");
-        }
-    });
-
     return (
         <div className="flex items-start mb-8 text-sm">
-            <img src={avatar} className="w-10 h-10 rounded-full mr-3" alt="avatar" />
+            <img src={currentUser.avatar} className="w-10 h-10 rounded-full mr-3 object-cover" alt="avatar" />
             <div className="relative flex items-end text-mess-frame"
                 onMouseEnter={() => setShowReact(true)}
                 onMouseLeave={() => { setShowReact(false); setOnHoverReaction(false) }}

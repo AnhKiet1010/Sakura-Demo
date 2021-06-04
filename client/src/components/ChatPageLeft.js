@@ -19,11 +19,34 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
     const currentUser = useSelector(state => state.currentUser);
     const [showChangeAvatar, setShowChangeAvatar] = useState(false);
     const [dataChange, setDataChange] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [newUsername, setNewUsername] = useState("");
     const [editUsername, setEditUsername] = useState(false);
+    const [uploadingUsername, setUploadingUsername] = useState(false);
 
     const handleChangeUsername = () => {
+        if (newUsername !== user.name && newUsername !== "") {
+            setUploadingUsername(true);
+            const formData = new FormData();
 
+            formData.append('name', newUsername);
+            formData.append('id', user.id);
+
+            CLIENT.update(formData)
+                .then(res => {
+                    const { status, data } = res.data;
+
+                    if (status === 200) {
+                        localStorage.setItem("user", JSON.stringify(data.userInfo));
+                        setDataChange(!dataChange);
+                        setUploadingUsername(false);
+                        setEditUsername(false);
+                    }
+
+                }).catch(err => {
+                    console.log(err);
+                });
+        }
     }
 
 
@@ -40,6 +63,7 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
     const handleAvatarChange = (e) => {
 
         if (e.target.files[0] !== undefined) {
+            setUploadingAvatar(true);
             const formData = new FormData();
 
             formData.append("avatar", e.target.files[0]);
@@ -53,6 +77,7 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
                     if (status === 200) {
                         localStorage.setItem("user", JSON.stringify(data.userInfo));
                         setDataChange(!dataChange);
+                        setUploadingAvatar(false);
                     }
 
                 }).catch(err => {
@@ -90,7 +115,16 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
                                     onMouseEnter={() => setShowChangeAvatar(true)}
                                     onMouseLeave={() => setShowChangeAvatar(false)}
                                 >
-                                    <img src={user.avatar ? user.avatar : demoAvatar} className="object-cover object-center w-full h-full visible transform-gpu transition-all hover:scale-105" />
+                                    {
+                                        !uploadingAvatar ?
+                                            <img src={user.avatar ? user.avatar : demoAvatar} className="object-cover object-center w-full h-full visible transform-gpu rounded-full border border-gray-500 transition-all hover:scale-105 animate__animated animate__fadeIn animate__faster" />
+                                            :
+                                            <div className="object-cover bg-gray-400 object-center flex justify-center items-center w-full h-full transition-all">
+                                                <span className="text-white opacity-75 block">
+                                                    <i className="fas fa-circle-notch fa-spin fa-2x" />
+                                                </span>
+                                            </div>
+                                    }
                                     {
                                         showChangeAvatar &&
                                         <label htmlFor="avatar" className="absolute w-full bottom-0 left-1/2 transform z-10 -translate-x-1/2 bg-gray-800 bg-opacity-50 cursor-pointer animate__animated animate__fadeIn animate__faster">
@@ -106,24 +140,37 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
                                 !editUsername && <div className="relative text-primary text-2xl font-bold animate__animated animate__fadeIn animate__faster">
                                     {user.name}
                                     {
-                                !editUsername && <div className="absolute -right-5 top-0 ml-4 text-green-500 cursor-pointer hover:opacity-60" onClick={() => setEditUsername(!editUsername)}><EditIcon className="w-3 h-3 fill-current" /></div>
-                            }
-                                    </div>
+                                        !editUsername && <div className="absolute -right-5 top-0 ml-4 text-green-500 cursor-pointer hover:opacity-60" onClick={() => setEditUsername(true)}><EditIcon className="w-3 h-3 fill-current" /></div>
+                                    }
+                                </div>
                             }
                             {
                                 editUsername &&
                                 <div className="flex flex-col w-full">
                                     <input type="text" name="username" value={newUsername} className="w-full border text-gray-700 px-2 py-1 rounded-md focus:outline-none animate__animated animate__fadeIn animate__faster" placeholder="Input new username" onChange={(e) => {
-                                        console.log(e.target.value);
                                         setNewUsername(e.target.value);
                                     }}
                                     />
                                     <div className="flex mt-2 mx-auto">
-                                        <div className="ml-2 text-green-500 bg-secondary rounded-md p-2 cursor-pointer hover:opacity-60 animate__animated animate__fadeIn animate__faster" onClick={handleChangeUsername}><EditIcon className="w-4 h-4 fill-current" /></div>
-                                        <div className="ml-2 text-green-500 bg-secondary rounded-md p-2 cursor-pointer hover:opacity-60 animate__animated animate__fadeIn animate__faster" onClick={() => {
+                                        <div
+                                            className={`ml-2 text-green-500 bg-secondary rounded-md p-2 cursor-pointer hover:opacity-60 animate__animated animate__fadeIn animate__faster`}
+                                            onClick={handleChangeUsername}>
+                                            {
+                                                !uploadingUsername ?
+                                                    <EditIcon className={`w-4 h-4 fill-current ${newUsername === user.name || newUsername==="" && "opacity-50"}`} /> :
+                                                    <div className={`w-4 h-4 fill-current flex items-center`}>
+                                                        <span className="text-green-500 block">
+                                                            <i className="fas fa-circle-notch fa-spin fa-x" />
+                                                        </span>
+                                                    </div>
+                                            }
+                                        </div>
+                                        <div 
+                                        className="ml-2 text-green-500 bg-secondary rounded-md p-2 cursor-pointer hover:opacity-60 animate__animated animate__fadeIn animate__faster" 
+                                        onClick={() => {
                                             setEditUsername(false);
                                             setNewUsername(user.name);
-                                        }}><RecallIcon className="w-4 h-4 fill-current" /></div>
+                                        }}><RecallIcon className={`w-4 h-4 fill-current ${uploadingUsername && "opacity-50"}`} /></div>
                                     </div>
                                 </div>
                             }
@@ -141,7 +188,7 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, listFriends, onFriendClick 
                             </div>
                         </div>
                     </div>
-                    {loadingFr ? <Loading /> : <ListFriends listFriends={listFriends} currentUser={currentUser} onFriendClick={onFriendClick} />}
+                    {loadingFr ? <Loading /> : <ListFriends onFriendClick={onFriendClick} />}
                 </div>
                 <button onClick={handleLogout} className="absolute bottom-10 inset-x-1/2 transform -translate-x-2/4 bg-gradient-to-b from-gray-400 to-gray-500  text-white font-bold py-2 px-4 rounded-lg uppercase text-sm  shadow-xl focus:outline-none">
                     Logout

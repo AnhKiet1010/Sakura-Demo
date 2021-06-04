@@ -1,10 +1,14 @@
 import moment from 'moment';
 
 export const formatTime = (timeX) => {
-    var time = new Date(timeX).toLocaleString("ja-JP");
-
-    var toNow = moment(time).toNow();
-    return toNow;
+    if(timeX && timeX !== "" && timeX !== undefined) {
+        var time = new Date(timeX).toLocaleString("ja-JP");
+    
+        var toNow = moment(time).toNow();
+        return toNow;
+    } else {
+        return timeX;
+    }
 }
 
 export const formatText = (text) => {
