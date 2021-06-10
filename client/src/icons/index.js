@@ -23,6 +23,7 @@ import { ReactComponent as BackIcon } from './back.svg';
 import { ReactComponent as MoreIcon } from './more.svg';
 import { ReactComponent as SendIcon } from './send.svg';
 import { ReactComponent as LoadingIcon } from './circles-loader.svg';
+import { ReactComponent as ZoomIcon } from './zoom.svg';
 
 
 export {
@@ -50,5 +51,6 @@ export {
     BackIcon,
     MoreIcon,
     SendIcon,
-    LoadingIcon
+    LoadingIcon,
+    ZoomIcon
 }

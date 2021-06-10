@@ -20,7 +20,7 @@ import audio from "../assets/audio/like.wav";
 import UploadPopup from '../components/UploadPopup';
 import MessFilterPopup from '../components/MessFilterPopup';
 import socket from '../helpers/socketConnect';
-import { PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon, SendIcon, ReplyIcon, BackIcon, LoadingIcon } from '../icons';
+import { PlusIcon, MicIcon, MenuIcon, CancelIcon, SearchIcon, SmileIcon, StickerIcon, SendIcon, ReplyIcon, BackIcon, LoadingIcon, ZoomIcon } from '../icons';
 import { setKeyword } from '../slices/keywordSlice';
 import { setTyping } from '../slices/typingSlice';
 import { setCurrentUser } from '../slices/currentUserSlice';
@@ -33,6 +33,7 @@ import handleProfileClickOutside from '../helpers/handleProfileClickOutside';
 import handleEditPanelClickOutside from '../helpers/handleEditPanelClickOutside';
 import ReplyPanel from '../components/ReplyPanel';
 import ChatPageLeft from '../components/ChatPageLeft';
+import ShowImg from '../components/ShowImg';
 
 const envLimit = parseInt(process.env.REACT_APP_MESS_PER_LOAD);
 
@@ -581,17 +582,29 @@ function ChatPage() {
                                     </div>
                                 </div>
                                 :
-                                <div className={`flex ${touchingMess.self ? "justify-between" : "justify-center"} items-center bg-secondary px-6 animate__animated animate__slideInUp animate__faster`} style={{ height: '134px' }} ref={panelRef}>
+                                <div className={`flex justify-between items-center bg-secondary px-6 animate__animated animate__slideInUp animate__faster`} style={{ height: '134px' }} ref={panelRef}>
                                     <div className="flex flex-col items-center hover:opacity-60 cursor-pointer" onClick={handleReply}>
                                         <ReplyIcon className="fill-current w-5 h-5 text-secondary" />
                                         Reply
                                     </div>
+
+                                    <div className="flex flex-col items-center hover:opacity-60 cursor-pointer" onClick={handleBackButton}>
+                                        <BackIcon className="fill-current w-5 h-5 text-secondary" />
+                                        Back
+                                    </div>
                                     {
-                                        touchingMess.self &&
-                                        <div className="flex flex-col items-center hover:opacity-60 cursor-pointer" onClick={handleBackButton}>
-                                            <BackIcon className="fill-current w-5 h-5 text-secondary" />
-                                            Back
-                                        </div>
+                                        touchingMess.mess.type === 'image' &&
+                                        <Popup className="my-slide-popup" modal trigger={
+                                            <div className="flex flex-col items-center hover:opacity-60 cursor-pointer">
+                                                <ZoomIcon className="fill-current w-5 h-5 text-secondary" />
+                                                    Zoom
+                                                </div>
+                                        }>
+                                            {close => {
+                                                return !isMobile ? <ShowImg slideImages={slideImages} onClose={close} currentImg={touchingMess.mess.img} />
+                                                : <img src={touchingMess.mess.img} alt="img" />
+                                            }}
+                                        </Popup>
                                     }
                                     {
                                         touchingMess.self &&
@@ -601,8 +614,8 @@ function ChatPage() {
                                         }} trigger={
                                             <div className="flex flex-col items-center hover:opacity-60 cursor-pointer">
                                                 <CancelIcon className="fill-current w-5 h-5 text-secondary" />
-                                        Delete
-                                    </div>
+                                                Delete
+                                            </div>
                                         }>
                                             {
                                                 close => {
