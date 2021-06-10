@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import API from '../../api/API';
 
 import ImageTempl from './ImageTempl';
@@ -10,6 +11,7 @@ function UploadPopup({ close, currentUser }) {
     const [gallery, setGallery] = useState([]);
     const [files, setFiles] = useState({});
     const [loading, setLoading] = useState(false);
+    const user = useSelector(state => state.user);
 
     function onSubmit(e) {
         setLoading(true);
@@ -17,7 +19,8 @@ function UploadPopup({ close, currentUser }) {
         for (let i = 0; i < files.length; i++) {
             formData.append("files", files[i]);
         }
-        formData.append("toId", currentUser.lineId);
+        formData.append("toId", currentUser._id);
+        formData.append("fromId", user.id);
         formData.append("type", gallery[0].type);
         API.sendMessage(formData)
             .then(res => {

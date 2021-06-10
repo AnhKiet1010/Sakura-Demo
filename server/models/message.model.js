@@ -18,8 +18,8 @@ const messageSchema = new mongoose.Schema(
     content: {
       type: String
     },
-    images: {
-      type: Array
+    img: {
+      type: String
     },
     seen: {
         type: Boolean
@@ -34,6 +34,14 @@ const messageSchema = new mongoose.Schema(
     reply: {
       type: String,
        default: ""
+    },
+    active: {
+      type: Boolean,
+      default: true
+    },
+    recall: {
+      type: Boolean,
+      default: false
     }
   }
 );

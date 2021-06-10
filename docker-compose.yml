@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   react-app:
     stdin_open: true
@@ -31,21 +31,42 @@ services:
     networks:
       - sakura-app
     depends_on:
-      - mongo
-  mongo:
+      - mongodb
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      MONGO_URL: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb
+  mongodb:
     container_name: mongodb
-    image: mongo:4.4.4
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     ports:
-      - "27017:27017"
-    env_file:
-      - ./env/mongo.env
+      - 27017:27017
     networks:
       - sakura-app
     volumes:
-      - ./data/mongo:/data/db
+      - mongodb-data:/data/db
+  mongo-express:
+    image: mongo-express
+    depends_on: 
+      - mongodb
+    ports: 
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123456
+    volumes: 
+      - mongodb-data
+    networks: 
+      - sakura-app
 networks:
   sakura-app:
     driver: bridge
 volumes:
-  mongo-data:
+  mongodb-data:
     driver: local

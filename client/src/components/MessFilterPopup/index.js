@@ -76,7 +76,7 @@ function MessFilterPopup({
                         <table className="text-left w-full">
                             <thead className="w-full bg-gray-300 dark:bg-gray-700 text-primary">
                                 <tr className="flex w-full">
-                                    <th className="p-4 w-1/6">User</th>
+                                    <th className="p-4 w-2/6">User</th>
                                     <th className="p-4 w-4/6">Message</th>
                                     <th className="p-4 w-1/6 text-right">Time</th>
                                 </tr>
@@ -97,10 +97,10 @@ function MessFilterPopup({
                                                 />
                                             })
                                             return <tr key={i} className={`w-full px-5 py-5 ${i !== listMessFilter.length - 1 ? "border-b" : ""} border-gray-200`}>
-                                                <td className="text-sm w-1/6">
+                                                <td className="text-sm w-2/6">
                                                     <div className="flex items-center">
                                                         <div className="flex-shrink-0 w-10 h-10">
-                                                            <img className="w-full h-full rounded-full" src={currentUser.avatar} alt="img" />
+                                                            <img className="w-full h-full rounded-full object-cover" src={currentUser.avatar} alt="img" />
                                                         </div>
                                                         <div className="ml-3">
                                                             <p className="whitespace-no-wrap">

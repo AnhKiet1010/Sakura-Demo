@@ -29,13 +29,13 @@ exports.store = async (req, res) => {
 
 exports.getFriends = async (req, res) => {
     const { userId } = req.body;
-    const listFriends = await User.find({_id: {$ne: userId}}).sort({ online: -1, lastActivity: -1  }).exec();
+    const listFriends = await User.find({ _id: { $ne: userId } }).sort({ online: -1, lastActivity: -1 }).exec();
 
     var result = [];
     for (let i = 0; i < listFriends.length; i++) {
         let fr = listFriends[i];
-        let countUnReadMess = await Message.countDocuments({ $and: [{author: fr._id}, {receive: userId}, {seen: false} ] }).exec();
-        let conver = await Conver.findOne({members: {$all: [mongoose.Types.ObjectId(userId), mongoose.Types.ObjectId(fr._id)]}}).exec();
+        let countUnReadMess = await Message.countDocuments({ $and: [{ author: fr._id }, { receive: userId }, { seen: false }] }).exec();
+        let conver = await Conver.findOne({ members: { $all: [mongoose.Types.ObjectId(userId), mongoose.Types.ObjectId(fr._id)] } }).exec();
         let friendObj = {
             friendData: fr,
             unReadCount: countUnReadMess,
@@ -55,9 +55,9 @@ exports.getFriends = async (req, res) => {
 
 exports.getMessages = async (req, res) => {
     const { frId, userId, skip, limit } = req.body;
-    await Message.updateMany({$and: [{author: frId, receive: userId}]} , { seen: true }).exec();
-    const listMess = await Message.find({ $or: [{$and: [{author: userId},{receive: frId}]}, {$and: [{author: frId},{receive: userId}]} ] }).skip(skip < 0 ? 0 : skip).limit(limit).sort({ _id: -1 }).exec();
-    const countMess = await Message.countDocuments({ $or: [{$and: [{author: userId},{receive: frId}]}, {$and: [{author: frId},{receive: userId}]} ] }).exec();
+    await Message.updateMany({ $and: [{ author: frId, receive: userId }] }, { seen: true }).exec();
+    const listMess = await Message.find({ $or: [{ $and: [{ author: userId }, { receive: frId }, { active: true }] }, { $and: [{ author: frId }, { receive: userId }, { active: true }] }] }).skip(skip < 0 ? 0 : skip).limit(limit).sort({ _id: -1 }).exec();
+    const countMess = await Message.countDocuments({ $or: [{ $and: [{ author: userId }, { receive: frId }] }, { $and: [{ author: frId }, { receive: userId }] }] }).exec();
     res.status(200).json({
         errors: [],
         message: "",
@@ -72,7 +72,7 @@ exports.getMessages = async (req, res) => {
 exports.getMessageById = async (req, res) => {
     const { id } = req.body;
     console.log(req.body);
-    const mess = await Message.findOne({_id: id }).exec();
+    const mess = await Message.findOne({ _id: id }).exec();
     res.status(200).json({
         errors: [],
         message: "",
@@ -83,12 +83,11 @@ exports.getMessageById = async (req, res) => {
 }
 
 exports.getImages = async (req, res) => {
-    const { id } = req.body;
-    console.log(req.body);
-    const listMess = await Message.find({ $or: [{ $and: [{ fromId: id }, { toId: 'channel' }, { type: 'image' }] }, { $and: [{ fromId: 'channel' }, { toId: id }, { type: 'image' }] }] }).sort({ _id: -1 }).exec();
+    const { fromId, toId } = req.body;
+    const listMess = await Message.find({ $or: [{ $and: [{ author: fromId }, { receive: toId }, { active: true }, {type: 'image'}] }, { $and: [{ author: toId }, { receive: fromId }, { active: true }, {type: 'image'}] }] }).sort({ _id: -1 }).exec();
     var result = [];
     listMess.forEach(element => {
-        result = [...result, ...element.images];
+        result.push(element.img);
     });
     res.json({
         result
@@ -97,8 +96,8 @@ exports.getImages = async (req, res) => {
 
 exports.postMessage = async (req, res) => {
     console.log('files', req.files);
-
-    const { toId, type } = req.body;
+    console.log(req.body);
+    const { fromId, toId, type } = req.body;
 
     const io = req.app.get('io');
 
@@ -109,51 +108,65 @@ exports.postMessage = async (req, res) => {
             images.push(uploadedFilePath);
         }
 
-        const message = new Message({
-            fromId: 'channel',
-            toId,
-            type,
-            content: "",
-            images,
-            contentId: "",
-            time: moment(),
-            seen: true,
-        });
+        images.map(async img => {
+            
+            const message = new Message({
+                author: fromId,
+                receive: toId,
+                content: "images...",
+                img,
+                type,
+                time: moment(),
+                seen: false
+            });
+    
+            await message.save((err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log("-------MESSAGE SAVED-------");
+                }
+            });
 
-        await message.save((err) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("-------MESSAGE SAVED-------");
-            }
         });
 
         await User.findOneAndUpdate(
-            { lineId: toId },
+            { _id: fromId },
             {
-                lastMess: "images...",
-                lastTime: new Date()
+                lastActivity: new Date()
             }).exec();
 
-        const messages = images.map(img => {
-            return {
-                type: 'image',
-                originalContentUrl: img,
-                previewImageUrl: img
-            }
-        });
+        await Conver.findOneAndUpdate(
+            { members: { $all: [mongoose.Types.ObjectId(fromId), mongoose.Types.ObjectId(toId)] } },
+            {
+                lastMess: "images..."
+            }).exec();
 
-        const body = {
-            to: toId,
-            messages
+        // const messages = images.map(img => {
+        //     return {
+        //         type: 'image',
+        //         originalContentUrl: img,
+        //         previewImageUrl: img
+        //     }
+        // });
+
+        // const body = {
+        //     to: toId,
+        //     messages
+        // }
+
+        // await LINE.pushMessage(body)
+        //     .then().catch(err => {
+        //         console.log(err);
+        //     })
+
+        const toUser = await User.findOne({ _id: toId }).exec();
+
+        if (toUser.online) {
+            io.to(toUser.socketId).emit("UserSendMessToUser");
         }
 
-        await LINE.pushMessage(body)
-            .then().catch(err => {
-                console.log(err);
-            })
-
-        io.emit("UserSendMess", { id: "channel" });
+        io.emit("UserSendMessToChangeData");
 
         res.status(200).json({
             errors: [],

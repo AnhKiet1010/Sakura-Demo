@@ -1,138 +1,114 @@
 
 import { useEffect, useState } from 'react';
 import socket from '../../helpers/socketConnect';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { formatTime, formatText } from '../../helpers/format';
-import { LoveIcon, AngryIcon, SadIcon, LikeIcon, SurpriseIcon, HeartIcon, CheckIcon, ReplyIcon, MoreIcon, EditIcon, RecallIcon, CancelIcon } from '../../icons';
+import { LoveIcon, AngryIcon, SadIcon, LikeIcon, SurpriseIcon, HeartIcon, CheckIcon } from '../../icons';
 import API from '../../api/API';
+import { setTouchingMess } from '../../slices/touchingMessSlice';
+import ImgMess from './ImgMess';
+import handleMessClickOutside from '../../helpers/handleMessClickOutside';
 
-function Self({ messId, text, seen, time, react, reply, handleReply }) {
-    const [showReact, setShowReact] = useState(false);
-    const [currentReact, setCurrentReact] = useState("");
+function Self({ mess, slideImages }) {
+    const dispatch = useDispatch();
     const currentUser = useSelector(state => state.currentUser);
+    const user = useSelector(state => state.user);
     const [replyMess, setReplyMess] = useState({});
-    const [onHoverReaction, setOnHoverReaction] = useState(false);
+    const { messRef, showReact, setShowReact } = handleMessClickOutside(false);
+    const touchingMess = useSelector(state => state.touchingMess);
+    const isMobile = useSelector(state => state.isMobile);
 
-    const calcTime = formatTime(time);
+    const calcTime = formatTime(mess.time);
 
     const handleClickReact = (reactIndex) => {
-        socket.emit("SendReact", { messId, react: reactIndex, id: currentUser._id });
+        console.log("Clicked");
+        socket.emit("SendReact", { messId: mess._id, react: reactIndex, id: currentUser._id });
         setShowReact(false);
     }
 
-    useEffect(async () => {
-        setCurrentReact(react);
 
-        if (reply && reply !== "") {
-            console.log("reply", reply);
-            await API.messagesDetail({ id: reply })
-                .then(res => {
-                    console.log("result", res);
-                    setReplyMess(res.data.data.mess);
-                });
+    function handleMessClick() {
+        setShowReact(!showReact);
+        if (touchingMess.showEditPanel) {
+            let action = setTouchingMess({ mess: {}, showEditPanel: !touchingMess.showEditPanel, self: false });
+            dispatch(action);
+        } else {
+            let action = setTouchingMess({ mess, showEditPanel: true, self: true });
+            dispatch(action);
         }
-    }, [messId]);
+    }
 
     useEffect(() => {
-
-        socket.on("ChangeReact", data => {
-            console.log(data);
-            const { changeMess, react } = data;
-
-            if (changeMess._id === messId) {
-                setCurrentReact(react);
+        async function getReply() {
+            if (mess.reply && mess.reply !== "") {
+                await API.messagesDetail({ id: mess.reply })
+                    .then(res => {
+                        setReplyMess(res.data.data.mess);
+                    });
             }
-        });
 
-        return () => {
-            socket.off("ChangeReact");
         }
-
-    });
+        getReply();
+    }, [mess]);
 
     return (
         <div className="w-full mb-8 flex flex-row-reverse">
-            <div className="relative flex justify-start items-end text-sm cursor-pointer max-w-max self-mess-frame"
-                onMouseEnter={() => setShowReact(true)}
-                onMouseLeave={() => { setShowReact(false); setOnHoverReaction(false) }}
-            >
+            <div className={`relative flex justify-start items-end text-sm max-w-max ${mess.type !== 'image' && "self-mess-frame"}`}>
 
-                <div className={`flex mr-2 flex-col items-end ${showReact && "hidden"}`}>
-                    {seen && <span className="text-gray-200 text-xs">
+                <div className={`flex mr-2 flex-col items-end`}>
+                    {mess.seen && <span className="text-gray-200 text-xs">
                         <CheckIcon className="w-3" />
                     </span>}
                     <span className="text-gray-500 text-xs">{calcTime}</span>
                 </div>
-                <div className={`flex flex-row items-end ${!showReact && "hidden"}`}>
-                    <div className="mr-2">
-                        <div className={`bg-secondary rounded-lg p-2 text-3xl text-primary pr-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
-                            <RecallIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
-                        </div>
-                    </div>
-                    <div className="mr-2">
-                        <div className={`bg-secondary rounded-lg p-2 text-3xl text-primary pr-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
-                            <EditIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
-                        </div>
-                    </div>
-                    <div className="mr-2">
-                        <div className={`bg-secondary rounded-lg p-2 text-3xl text-primary pr-2 focus:outline-none cursor-pointer`} onClick={() => handleReply(messId, text)}>
-                            <ReplyIcon className="react-icon fill-current h-5 w-5 block hover:text-blue-500" />
-                        </div>
-                    </div>
+                <div className={`absolute right-0 z-10 -top-10 flex flex-row items-end ${!showReact && "hidden"}`} ref={messRef}>
                     <div className={`flex mr-2 bg-secondary py-2 px-1 rounded-lg ${!showReact && "hidden"} overflow-hidden`}>
                         {
-                            onHoverReaction &&
+                            showReact &&
                             <>
-                                <div onClick={() => handleClickReact("1")}><LoveIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("2")}><AngryIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("3")}><SadIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("4")}><SurpriseIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("5")}><HeartIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("6")}><LikeIcon className="react-icon w-5 h-5 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("1")}><LoveIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("2")}><AngryIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("3")}><SadIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("4")}><SurpriseIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("5")}><HeartIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                                <div onClick={() => handleClickReact("6")}><LikeIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
                             </>
                         }
-                        <div onClick={() => setOnHoverReaction(!onHoverReaction)}>
-                            {
-                                onHoverReaction ?
-                                    <CancelIcon className="react-icon w-5 h-5 mx-1 fill-current hover:text-blue-500 cursor-pointer" />
-                                    :
-                                    <MoreIcon className="react-icon w-5 h-5 mx-1 hover:text-blue-500 cursor-pointer" />
-                            }
-                        </div>
                     </div>
                 </div>
 
-                <div className="relative text-gray-800 leading-normal bg-green-200 rounded-lg px-4 py-3 m-0 max-w-lg" onClick={() => handleReply(messId, text)}>
+                <div className={`relative text-gray-800 leading-normal cursor-pointer bg-green-200 rounded-lg ${mess.type !== 'image' && "px-4 py-3"} m-0 `}
+                    onClick={handleMessClick}
+                    ref={messRef}
+                >
                     {
-                        reply !== "" &&
-                        <div className="bg-green-400 dark:bg-green-500 text-primary rounded-lg px-4 py-2 mb-2">
+                        mess.reply !== "" &&
+                        <div className="bg-green-400 dark:bg-green-500 text-primary rounded-lg px-4 py-2 mb-2 opacity-70">
                             <div className="border-l-2 border-blue-600 pl-2">
                                 <div className="flex items-center">
-                                    Reply to <span className="font-bold mx-2">{currentUser.name}</span>
+                                    <span className="font-bold">{replyMess.author === user.id ? "You" : currentUser.name}</span>
                                 </div>
-                                <div className="text-primary opacity-75">{replyMess.content}</div>
-                            </div>
-                        </div>
-                    }
-                    {formatText(text)}
-                    {
-                        currentReact !== "" &&
-                        <div className="absolute -bottom-5 right-0">
-                            <div className="flex bg-green-200 p-0.5 border-2 dark:border-gray-700 border-white rounded-2xl" onClick={() => handleClickReact("")}>
-                                {currentReact === "1" && <LoveIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
-                                {currentReact === "2" && <AngryIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
-                                {currentReact === "3" && <SadIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
-                                {currentReact === "4" && <SurpriseIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
-                                {currentReact === "5" && <HeartIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
-                                {currentReact === "6" && <LikeIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                <div className={`text-primary opacity-75 italic truncate ${isMobile ? "w-52" : "max-w-md"}`}>{replyMess.content}</div>
                             </div>
                         </div>
                     }
                     {
-                        showReact &&
-                        <div className="absolute -top-2 -left-2">
-                            <div className=" bg-red-500 p-1 rounded-full w-5 h-5 flex items-center justify-center text-white" onClick={() => handleClickReact("")}>
-                                <CancelIcon className="react-icon w-2 h-2 hover:opacity-50 cursor-pointer fill-current" />
+                        mess.type === "image"
+                            ?
+                            <ImgMess img={mess.img} slideImages={slideImages} />
+                            :
+                            formatText(mess.content)
+                    }
+                    {
+                        mess.react !== "" &&
+                        <div className="absolute -bottom-5 right-0 block">
+                            <div className="flex bg-green-200 p-0.5 border-2 dark:border-gray-700 border-white rounded-2xl" onClick={() => { handleClickReact(""); setShowReact(false) }}>
+                                {mess.react === "1" && <LoveIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                {mess.react === "2" && <AngryIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                {mess.react === "3" && <SadIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                {mess.react === "4" && <SurpriseIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                {mess.react === "5" && <HeartIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
+                                {mess.react === "6" && <LikeIcon className="react-icon w-4 h-4 mx-1 hover:opacity-50 cursor-pointer" />}
                             </div>
                         </div>
                     }

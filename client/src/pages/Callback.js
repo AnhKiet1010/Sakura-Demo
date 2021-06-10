@@ -20,7 +20,7 @@ function Callback() {
         if (state === 'success') {
             AUTH.callback(body)
                 .then((res) => {
-                    let { status, message, errors, data } = res.data;
+                    let { status, data } = res.data;
                     console.log(res.data);
                     if (status === 200) {
                         onLogin(data.accessToken, data.userInfo);

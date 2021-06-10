@@ -6,7 +6,7 @@ RUN chown node:node /app
 
 COPY --chown=node:node package*.json ./
 
-RUN yarn install
+RUN yarn install && yarn cache clean --all
 
 COPY --chown=node:node . .
 

@@ -19,11 +19,10 @@ import { ReactComponent as CheckIcon } from './check.svg';
 import { ReactComponent as ReplyIcon } from './reply-right.svg';
 import { ReactComponent as ReplyLeftIcon } from './reply-left.svg';
 import { ReactComponent as EditIcon } from './edit.svg';
-import { ReactComponent as RecallIcon } from './recall.svg';
+import { ReactComponent as BackIcon } from './back.svg';
 import { ReactComponent as MoreIcon } from './more.svg';
-
-
-
+import { ReactComponent as SendIcon } from './send.svg';
+import { ReactComponent as LoadingIcon } from './circles-loader.svg';
 
 
 export {
@@ -48,6 +47,8 @@ export {
     ReplyIcon,
     ReplyLeftIcon,
     EditIcon,
-    RecallIcon,
-    MoreIcon
+    BackIcon,
+    MoreIcon,
+    SendIcon,
+    LoadingIcon
 }

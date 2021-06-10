@@ -24,6 +24,7 @@ exports.handleOfflineStatus = async (socketId, socket) => {
 
 exports.handleUserSeenMess = async (data, socket) => {
     const { ofId, fromId } = data;
+    await Message.updateMany({ $and: [{ author: ofId, receive: fromId }] }, { seen: true }).exec();
 
     const ofUser = await User.findOne({ _id: ofId }).exec();
 
@@ -127,7 +128,6 @@ exports.searchMess = async (data, socket) => {
 }
 
 exports.changeReact = async (data, socket) => {
-    console.log('data', data);
 
     const { messId, react, id } = data;
 
@@ -138,14 +138,70 @@ exports.changeReact = async (data, socket) => {
         }
     });
 
-    const changeMess = await Message.findOne({ _id: messId }).exec();
+    const messChange = await Message.findOne({_id: messId}).exec();
     
     const toUser = await User.findOne({ _id: id }).exec();
     
     if (toUser.online) {
-        socket.to(toUser.socketId).emit("ChangeReact",  { changeMess, react });
+        socket.to(toUser.socketId).emit("ChangeReact",  { messChange, react });
     }
 
-    socket.emit("ChangeReact", { changeMess, react });
+    socket.emit("ChangeReact", { messChange, react });
 
 }
+
+exports.userLogout = async (data, socket) => {
+
+    const { userId } = data;
+
+    await User.findOneAndUpdate({_id: userId}, {online: false}).exec();
+
+    socket.broadcast.emit("UserStateChange");
+}
+
+exports.deleteMess = async (data, socket) => {
+    const { messId, toId, fromId } = data;
+    console.log("data", data);
+
+    await Message.updateMany({ $or: [{_id: messId}, {reply: messId }]}, {active: false}).exec();
+
+    await updateLastMess(fromId, toId);
+    
+    const toUser = await User.findOne({ _id: toId }).exec();
+
+    if (toUser.online) {
+        socket.to(toUser.socketId).emit("UserDeleteMess");
+    }
+
+    socket.emit("UserDeleteMess");
+}
+
+exports.recallMess = async (data, socket) => {
+    console.log('recall mess id', data);
+    const { messId, toId, fromId } = data;
+
+    await Message.findOneAndUpdate({_id: messId}, {recall: true});
+
+    await updateLastMess(fromId, toId);
+    
+    const toUser = await User.findOne({ _id: toId }).exec();
+
+    if (toUser.online) {
+        socket.to(toUser.socketId).emit("UserRecallMess");
+    }
+
+    socket.emit("UserRecallMess");
+}
+
+async function updateLastMess(authorId, toId) {
+    const lastMess = await Message.findOne({ $or: [{ $and: [{ author: authorId }, { receive: toId }, { active: true }, {recall: false}] }, { $and: [{ author: toId }, { receive: authorId }, { active: true }, {recall: false}] }] }).sort({ _id: -1 }).exec();
+    let content = "";
+    if(lastMess) {
+        content = lastMess.content
+    }
+    await Conver.findOneAndUpdate(
+        { members: {$all: [mongoose.Types.ObjectId(authorId), mongoose.Types.ObjectId(toId)]} },
+        {
+            lastMess: content.split('\n')[content.split('\n').length - 1]
+        }).exec();
+}   

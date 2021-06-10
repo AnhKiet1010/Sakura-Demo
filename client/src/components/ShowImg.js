@@ -15,7 +15,6 @@ import { CancelIcon } from '../icons';
 SwiperCore.use([Navigation, Thumbs]);
 
 function ShowImg({ slideImages, onClose, currentImg }) {
-    console.log('currentImg', currentImg);
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
     const currentIndex = slideImages.indexOf(currentImg);
     const params = {
@@ -27,7 +26,7 @@ function ShowImg({ slideImages, onClose, currentImg }) {
 
     return (
         <div className="relative bg-primary shadow-lg">
-            <CancelIcon className="absolute w-8 h-8 -top-3 -right-3 text-black bg-white p-2 rounded-full z-10 cursor-pointer" onClick={onClose} />
+            <CancelIcon className="absolute w-8 h-8 -top-6 -right-6 text-black bg-white p-2 rounded-full z-10 cursor-pointer" onClick={onClose} />
             <Swiper
                 { ...params}
                 className="mySwiperSlide"
@@ -36,13 +35,13 @@ function ShowImg({ slideImages, onClose, currentImg }) {
                 {
                     slideImages.map((img, i) => {
                         return <SwiperSlide key={i}
-                        style={{backgroundImage: `url(${img})`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundSize: 'cover',
-                        backgroundColor: 'rgb(208 19 19)',
-                        backgroundBlendMode: "screen",
-                    }}
-                        ><img src={img} alt="slide" className="w-4/6" />
+                    //     style={{backgroundImage: `url(${img})`,
+                    //     backgroundRepeat: 'no-repeat',
+                    //     backgroundSize: 'cover',
+                    //     backgroundColor: 'rgb(208 19 19)',
+                    //     backgroundBlendMode: "screen",
+                    // }}
+                        ><img src={img} alt="slide" className="w-full object-contain" />
                     </SwiperSlide>
                     })
                 }

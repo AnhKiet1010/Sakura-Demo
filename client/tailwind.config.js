@@ -12,6 +12,9 @@ module.exports = {
         primary: "var(--color-text-primary)",
         secondary: "var(--color-text-secondary)",
       },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+      }
     },
   },
   variants: {

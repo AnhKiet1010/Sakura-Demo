@@ -1,4 +1,5 @@
 import cookie from 'react-cookies';
+import socket from './socketConnect';
 
 
 export const onLogin = (token, userInfo) => {
@@ -6,7 +7,8 @@ export const onLogin = (token, userInfo) => {
     localStorage.setItem('user', JSON.stringify(userInfo));
 }
 
-export const onLogout = () => {
+export const onLogout = (userId) => {
     cookie.remove('accessToken', { path: '/' });
+    socket.emit("UserLogout", {userId}); 
     localStorage.clear();
 }

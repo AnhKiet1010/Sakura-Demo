@@ -9,6 +9,7 @@ const LINE = require('../LINE-api/API');
 const { cloudUploadAudio, cloudUploadImage } = require('../middlewares/cloudinary');
 const fs = require('fs');
 const Path = require('path');
+const Conver = require('../models/conversation.model');
 
 
 // create LINE SDK config from env variables
@@ -75,6 +76,21 @@ exports.callbackClient = async (req, res) => {
             name: displayName,
             avatar: pictureUrl,
             email: userInfo1.data.email
+        });
+
+        const listFr = await User.find({}).exec();
+        console.log('list friends to conver', listFr);
+
+        listFr.forEach(async fr => {
+            let members = [];
+            members.push(user._id);
+            members.push(fr._id);
+
+            let newConver = new Conver({
+                members
+            });
+
+            await newConver.save((err) => console.log(err));
         });
 
 

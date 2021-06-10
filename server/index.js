@@ -5,8 +5,8 @@ const app = express();
 const httpServer = require("http").createServer(app);
 const io = require("socket.io")(httpServer, {
     cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
+        origin: "*",
+        methods: ["GET", "POST"],
     }
 });
 const cookieParser = require('cookie-parser');
@@ -25,7 +25,18 @@ const connectDB = require("./config/db");
 // Connect to database
 connectDB();
 
-const { channelSendMess, searchMess, changeReact, handleOnlineStatus, handleOfflineStatus, handleUserSeenMess, handleUserStartTyping, handleUserEndTyping } = require("./controllers/socket.controller");
+const { channelSendMess,
+    searchMess,
+    changeReact,
+    handleOnlineStatus,
+    handleOfflineStatus,
+    handleUserSeenMess,
+    handleUserStartTyping,
+    handleUserEndTyping,
+    userLogout,
+    deleteMess,
+    recallMess
+} = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
     // show connect id in server
@@ -35,19 +46,22 @@ io.on("connection", async socket => {
 
     socket.on("UserOnline", data => handleOnlineStatus(data, socket));
 
-    socket.on("UserSeenMess", data => handleUserSeenMess(data,socket));
+    socket.on("UserSeenMess", data => handleUserSeenMess(data, socket));
 
-    socket.on("UserStartTyping", data => handleUserStartTyping(data,socket));
+    socket.on("UserStartTyping", data => handleUserStartTyping(data, socket));
     socket.on("UserEndTyping", data => handleUserEndTyping(data, socket));
+    socket.on("UserLogout", data => userLogout(data, socket));
+    socket.on("UserRecallMess", data => recallMess(data,socket));
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
     socket.on("SearchMess", data => searchMess(data, socket));
     socket.on("SendReact", data => changeReact(data, socket));
+    socket.on("UserDeleteMess", data => deleteMess(data, socket));
 });
 
 app.set("io", io);
 
-app.get("/", (req,res) => {
+app.get("/", (req, res) => {
     res.send("Server connected");
 });
 
