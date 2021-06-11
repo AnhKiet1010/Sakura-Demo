@@ -6,7 +6,8 @@ import {
     URL_API_LIST_MESSAGES,
     URL_API_SEND_MESSAGE,
     URL_API_GET_IMAGES,
-    URL_API_GET_MESSAGES_DETAIL
+    URL_API_GET_MESSAGES_DETAIL,
+    URL_API_GET_LIST_NOTI
 } from './URL';
 
 const getInstance = () => {
@@ -41,6 +42,10 @@ API.sendMessage = (body) => {
 
 API.getImages = (body) => {
     return API.instance.post(URL_API_GET_IMAGES, body);
+};
+
+API.getNoti = (body) => {
+    return API.instance.post(URL_API_GET_LIST_NOTI, body);
 };
 
 API.messagesDetail = (body) => {

@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore, {
     Navigation, Thumbs
 } from 'swiper/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Import Swiper styles
 import "swiper/swiper.min.css";
@@ -14,15 +14,16 @@ import { CancelIcon } from '../icons';
 // install Swiper's Thumbs component
 SwiperCore.use([Navigation, Thumbs]);
 
-function ShowImg({ slideImages, onClose, currentImg }) {
+function ShowImg({ onClose, currentImg, imagesSlide }) {
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
-    const currentIndex = slideImages.indexOf(currentImg);
+    const currentIndex = imagesSlide.indexOf(currentImg.img);
     const params = {
         initialSlide: currentIndex,
         spaceBetween: 10,
         navigation: true,
         thumbs: { swiper: thumbsSwiper }
     }
+
 
     return (
         <div className="relative bg-primary shadow-lg">
@@ -33,7 +34,7 @@ function ShowImg({ slideImages, onClose, currentImg }) {
                 >
 
                 {
-                    slideImages.map((img, i) => {
+                    imagesSlide.map((img, i) => {
                         return <SwiperSlide key={i}
                     //     style={{backgroundImage: `url(${img})`,
                     //     backgroundRepeat: 'no-repeat',
@@ -54,7 +55,7 @@ function ShowImg({ slideImages, onClose, currentImg }) {
                 watchSlidesProgress={true}
                 className="mySwiper">
                 {
-                    slideImages.map((img, i) => {
+                    imagesSlide.map((img, i) => {
                         return <SwiperSlide key={i}><img src={img} alt="slide" /></SwiperSlide>
                     })
                 }

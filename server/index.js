@@ -35,7 +35,9 @@ const { channelSendMess,
     handleUserEndTyping,
     userLogout,
     deleteMess,
-    recallMess
+    recallMess,
+    searchFriend,
+    sendNoti
 } = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
@@ -51,7 +53,10 @@ io.on("connection", async socket => {
     socket.on("UserStartTyping", data => handleUserStartTyping(data, socket));
     socket.on("UserEndTyping", data => handleUserEndTyping(data, socket));
     socket.on("UserLogout", data => userLogout(data, socket));
+    socket.on("UserDeleteMess", data => deleteMess(data, socket));
     socket.on("UserRecallMess", data => recallMess(data,socket));
+    socket.on("UserSearchFriend", data => searchFriend(data,socket));
+    socket.on("UserSendRequestFriend", data => sendNoti(data,socket));
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
     socket.on("SearchMess", data => searchMess(data, socket));

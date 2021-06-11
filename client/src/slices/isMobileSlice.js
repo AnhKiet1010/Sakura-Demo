@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 export const isMobileSlice = createSlice({
   name: 'isMobile',
-  initialState: true,
+  initialState: window.innerWidth > 768 ? false : true,
   reducers: {
     setIsMobile: (state, action) => {
       return action.payload;

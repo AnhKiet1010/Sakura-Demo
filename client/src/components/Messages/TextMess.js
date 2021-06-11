@@ -8,7 +8,7 @@ import { setTouchingMess } from '../../slices/touchingMessSlice';
 import ImgMess from './ImgMess';
 import handleMessClickOutside from '../../helpers/handleMessClickOutside';
 
-function TypeText({ mess, slideImages }) {
+function TypeText({ mess }) {
     const dispatch = useDispatch();
     const currentUser = useSelector(state => state.currentUser);
     const [replyMess, setReplyMess] = useState({});
@@ -69,7 +69,7 @@ function TypeText({ mess, slideImages }) {
                     {
                         mess.type === "image"
                             ?
-                            <ImgMess img={mess.img} slideImages={slideImages} />
+                            <ImgMess img={mess.img} />
                             :
                             formatText(mess.content)
                     }

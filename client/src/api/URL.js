@@ -6,4 +6,5 @@ export const URL_API_LIST_MESSAGES = "/api/messages";
 export const URL_API_SEND_MESSAGE = "/api/send-message";
 export const URL_API_GET_IMAGES = "/api/get-images";
 export const URL_API_GET_MESSAGES_DETAIL = "/api/messages-detail";
+export const URL_API_GET_LIST_NOTI = "/api/list-noti";
 export const URL_API_USER_UPDATE = "/user/update";

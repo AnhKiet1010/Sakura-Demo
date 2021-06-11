@@ -24,6 +24,9 @@ import { ReactComponent as MoreIcon } from './more.svg';
 import { ReactComponent as SendIcon } from './send.svg';
 import { ReactComponent as LoadingIcon } from './circles-loader.svg';
 import { ReactComponent as ZoomIcon } from './zoom.svg';
+import { ReactComponent as BellIcon } from './bell.svg';
+import { ReactComponent as AddIcon } from './add.svg';
+import { ReactComponent as CheckedIcon } from './checked.svg';
 
 
 export {
@@ -52,5 +55,8 @@ export {
     MoreIcon,
     SendIcon,
     LoadingIcon,
-    ZoomIcon
+    ZoomIcon,
+    BellIcon,
+    AddIcon,
+    CheckedIcon
 }

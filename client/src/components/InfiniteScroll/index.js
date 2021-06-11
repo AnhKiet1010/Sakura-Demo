@@ -5,7 +5,7 @@ import LoadingImg from '../../icons/loading.gif';
 import TypingImg from '../../icons/typing.svg';
 import ListMessages from '../ListMessages';
 
-function InfiniteScroll({ listMessages, fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, loadingTop, currentUser, word, limit, slideImages }) {
+function InfiniteScroll({ fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, loadingTop, currentUser, limit, slideImages }) {
     const messagesEndRef = useRef(null);
     const typing = useSelector(state => state.typing);
 

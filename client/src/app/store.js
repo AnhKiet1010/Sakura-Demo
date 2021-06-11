@@ -7,6 +7,10 @@ import listFriendsReducer from '../slices/listFriendsSlice';
 import listMessagesReducer from '../slices/listMessagesSlice';
 import isMobileReducer from '../slices/isMobileSlice';
 import touchingMessReducer from '../slices/touchingMessSlice';
+import listSearchFriendsReducer from '../slices/listSearchFriendsSlice';
+import listNotiReducer from '../slices/listNotiSlice';
+import haveNotiReducer from '../slices/haveNotiSlice';
+
 
 export default configureStore({
   reducer: {
@@ -17,6 +21,9 @@ export default configureStore({
       listFriends: listFriendsReducer,
       listMessages: listMessagesReducer,
       isMobile: isMobileReducer,
-      touchingMess: touchingMessReducer
+      touchingMess: touchingMessReducer,
+      listSearchFriends: listSearchFriendsReducer,
+      listNoti: listNotiReducer,
+      haveNoti: haveNotiReducer
   },
 })

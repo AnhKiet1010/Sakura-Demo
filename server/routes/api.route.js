@@ -10,7 +10,8 @@ const {
     getMessages,
     postMessage,
     getImages,
-    getMessageById
+    getMessageById,
+    getListNoti
 } = require('../controllers/api.controller');
 
 router.get("/category", category);
@@ -20,5 +21,6 @@ router.post("/messages", getMessages);
 router.post("/send-message", upload.array('files', 12), postMessage);
 router.post("/get-images", getImages);
 router.post('/messages-detail', getMessageById);
+router.post('/list-noti', getListNoti);
 
 module.exports = router;

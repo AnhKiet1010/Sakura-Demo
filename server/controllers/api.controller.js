@@ -7,6 +7,7 @@ const client = require('../config/lineClient');
 const { cloudUploadImage, cloudUploadAudio } = require('../middlewares/cloudinary');
 const LINE = require('../LINE-api/API');
 const Conver = require('../models/conversation.model');
+const Noti = require('../models/noti.model');
 const mongoose = require('mongoose');
 
 
@@ -84,6 +85,7 @@ exports.getMessageById = async (req, res) => {
 
 exports.getImages = async (req, res) => {
     const { fromId, toId } = req.body;
+    console.log(req.body);
     const listMess = await Message.find({ $or: [{ $and: [{ author: fromId }, { receive: toId }, { active: true }, {type: 'image'}] }, { $and: [{ author: toId }, { receive: fromId }, { active: true }, {type: 'image'}] }] }).sort({ _id: -1 }).exec();
     var result = [];
     listMess.forEach(element => {
@@ -231,4 +233,23 @@ exports.postMessage = async (req, res) => {
             message: "Upload Success"
         });
     }
+}
+
+exports.getListNoti = async (req,res) => {
+    const { id } =req.body;
+    console.log(req.body);
+
+    const listNoti = await Noti.find({$and: [{toId: id}, {seen: false}]});
+    let result = [];
+    for(let i = 0; i < listNoti.length; i++ ) {
+        const userInfo = await User.findOne({_id: listNoti[i].fromId}).exec();
+        const newNoti = {
+            fromUser: userInfo,
+            type: listNoti[i].type,
+        }
+        result.push(newNoti);
+    }
+
+    res.json({listNoti: result});
+
 }

@@ -5,6 +5,7 @@ const Message = require('../models/message.model');
 const { client } = require('../config/lineClient');
 const moment = require("moment");
 const Conver = require('../models/conversation.model');
+const Noti = require('../models/noti.model');
 const mongoose = require('mongoose');
 
 exports.handleOnlineStatus = async (data, socket) => {
@@ -191,6 +192,36 @@ exports.recallMess = async (data, socket) => {
     }
 
     socket.emit("UserRecallMess");
+}
+
+exports.searchFriend = async (data, socket) =>  {
+    const {keyword, id} = data;
+    const query = keyword.toLowerCase().replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&");
+    const list = await User.find({$and: [{contacts: {$ne: id}}, {name: { $regex: query, $options: 'i' }}, {_id: {$ne: id}} ]}).exec();
+
+    socket.emit("SearchedFriend", {listSearch: list});
+}
+
+exports.sendNoti = async (data, socket) => {
+    console.log(data);
+    const { fromId, toId } = data;
+
+    const noti = new Noti({
+        fromId,
+        toId,
+        type: "send",
+    });
+
+    const toUser = await User.findOne({ _id: toId }).exec();
+    
+    if (toUser.online) {
+        socket.to(toUser.socketId).emit("UserSendNoti");
+    }
+
+    await noti.save(err => {
+        if(err) console.log(err);
+    });
+
 }
 
 async function updateLastMess(authorId, toId) {

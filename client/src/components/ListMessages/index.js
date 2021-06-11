@@ -12,7 +12,7 @@ import { setListMessages } from '../../slices/listMessagesSlice';
 import { setTouchingMess } from '../../slices/touchingMessSlice';
 import { useDispatch } from 'react-redux';
 
-function ListMessages({ currentUser, slideImages }) {
+function ListMessages({ currentUser }) {
     const listMessages = useSelector(state => state.listMessages);
     const [lm, setLm] = useState([]);
     const dispatch = useDispatch();
@@ -58,7 +58,6 @@ function ListMessages({ currentUser, slideImages }) {
                                 key={i}
                                 avatar={currentUser.avatar}
                                 mess={mess}
-                                slideImages={slideImages}
                             />
                         }
                     } else {
@@ -70,7 +69,6 @@ function ListMessages({ currentUser, slideImages }) {
                             result = <SelfMess
                                 key={i}
                                 mess={mess}
-                                slideImages={slideImages}
                             />
                         }
                     }
