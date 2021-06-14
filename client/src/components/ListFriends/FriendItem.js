@@ -6,9 +6,9 @@ function FriendItems({ frId, avatar, name, lastTime, lastMess, handleOnClick, un
     const currentUser = useSelector(state => state.currentUser);
 
     return (
-        <div onClick={handleOnClick} className={`w-full flex items-center py-2 hover:bg-secondary px-4 cursor-pointer ${currentUser._id === frId && "bg-secondary"}`}>
+        <div onClick={handleOnClick} className={`w-full flex items-center py-2 hover:bg-primary px-4 cursor-pointer ${currentUser._id === frId && "bg-primary"}`}>
             <div className="m-1 mr-2 w-12 h-12 relative flex justify-center items-center rounded-full text-xl text-white">
-                <img src={avatar} className={`rounded-full ${online && "border border-green-500"} object-cover object-center w-full h-full`} alt="avatar" />
+                <img src={avatar} className={`rounded-full ${online && "p-0.5 bg-green-500"} object-cover object-center w-full h-full`} alt="avatar" />
                 { online && <div className="absolute right-0.5 top-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border" /> }
             </div>
             <div className="flex-1 flex flex-col justify-center h-full my-auto">

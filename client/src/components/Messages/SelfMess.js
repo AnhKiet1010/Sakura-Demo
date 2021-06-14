@@ -46,7 +46,6 @@ function Self({ mess }) {
                         setReplyMess(res.data.data.mess);
                     });
             }
-
         }
         getReply();
     }, [mess]);
@@ -61,21 +60,17 @@ function Self({ mess }) {
                     </span>}
                     <span className="text-gray-500 text-xs">{calcTime}</span>
                 </div>
-                <div className={`absolute right-0 z-10 -top-10 flex flex-row items-end ${!showReact && "hidden"}`} ref={messRef}>
-                    <div className={`flex mr-2 bg-secondary py-2 px-1 rounded-lg ${!showReact && "hidden"} overflow-hidden`}>
-                        {
-                            showReact &&
-                            <>
-                                <div onClick={() => handleClickReact("1")}><LoveIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("2")}><AngryIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("3")}><SadIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("4")}><SurpriseIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("5")}><HeartIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                                <div onClick={() => handleClickReact("6")}><LikeIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
-                            </>
-                        }
+                {
+                    showReact &&
+                    <div className={`flex absolute right-0 z-10 -top-10 mr-2 bg-secondary py-2 px-1 flex-row items-end rounded-lg overflow-hidden`} ref={messRef}>
+                        <div onClick={() => handleClickReact("1")}><LoveIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                        <div onClick={() => handleClickReact("2")}><AngryIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                        <div onClick={() => handleClickReact("3")}><SadIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                        <div onClick={() => handleClickReact("4")}><SurpriseIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                        <div onClick={() => handleClickReact("5")}><HeartIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
+                        <div onClick={() => handleClickReact("6")}><LikeIcon className="react-icon w-6 h-6 mx-1 hover:opacity-50 cursor-pointer" /></div>
                     </div>
-                </div>
+                }
 
                 <div className={`relative text-gray-800 leading-normal cursor-pointer bg-green-200 rounded-lg ${mess.type !== 'image' && "px-4 py-3"} m-0 `}
                     onClick={handleMessClick}

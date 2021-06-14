@@ -75,7 +75,7 @@ exports.channelSendMess = async (data, socket) => {
         }).exec();
 
     await Conver.findOneAndUpdate(
-        { members: {$all: [mongoose.Types.ObjectId(fromId), mongoose.Types.ObjectId(toId)]} },
+        { members: { $all: [fromId, toId] } },
         {
             lastMess: content.split('\n')[content.split('\n').length - 1]
         }).exec();
@@ -139,12 +139,12 @@ exports.changeReact = async (data, socket) => {
         }
     });
 
-    const messChange = await Message.findOne({_id: messId}).exec();
-    
+    const messChange = await Message.findOne({ _id: messId }).exec();
+
     const toUser = await User.findOne({ _id: id }).exec();
-    
+
     if (toUser.online) {
-        socket.to(toUser.socketId).emit("ChangeReact",  { messChange, react });
+        socket.to(toUser.socketId).emit("ChangeReact", { messChange, react });
     }
 
     socket.emit("ChangeReact", { messChange, react });
@@ -155,7 +155,7 @@ exports.userLogout = async (data, socket) => {
 
     const { userId } = data;
 
-    await User.findOneAndUpdate({_id: userId}, {online: false}).exec();
+    await User.findOneAndUpdate({ _id: userId }, { online: false }).exec();
 
     socket.broadcast.emit("UserStateChange");
 }
@@ -164,10 +164,10 @@ exports.deleteMess = async (data, socket) => {
     const { messId, toId, fromId } = data;
     console.log("data", data);
 
-    await Message.updateMany({ $or: [{_id: messId}, {reply: messId }]}, {active: false}).exec();
+    await Message.updateMany({ $or: [{ _id: messId }, { reply: messId }] }, { active: false }).exec();
 
     await updateLastMess(fromId, toId);
-    
+
     const toUser = await User.findOne({ _id: toId }).exec();
 
     if (toUser.online) {
@@ -181,10 +181,10 @@ exports.recallMess = async (data, socket) => {
     console.log('recall mess id', data);
     const { messId, toId, fromId } = data;
 
-    await Message.findOneAndUpdate({_id: messId}, {recall: true});
+    await Message.findOneAndUpdate({ _id: messId }, { recall: true });
 
     await updateLastMess(fromId, toId);
-    
+
     const toUser = await User.findOne({ _id: toId }).exec();
 
     if (toUser.online) {
@@ -194,16 +194,15 @@ exports.recallMess = async (data, socket) => {
     socket.emit("UserRecallMess");
 }
 
-exports.searchFriend = async (data, socket) =>  {
-    const {keyword, id} = data;
+exports.searchFriend = async (data, socket) => {
+    const { keyword, id } = data;
     const query = keyword.toLowerCase().replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, "\\$&");
-    const list = await User.find({$and: [{contacts: {$ne: id}}, {name: { $regex: query, $options: 'i' }}, {_id: {$ne: id}} ]}).exec();
+    const list = await User.find({ $and: [{ contacts: { $ne: id } }, { name: { $regex: query, $options: 'i' } }, { _id: { $ne: id } }] }).exec();
 
-    socket.emit("SearchedFriend", {listSearch: list});
+    socket.emit("SearchedFriend", { listSearch: list });
 }
 
 exports.sendNoti = async (data, socket) => {
-    console.log(data);
     const { fromId, toId } = data;
 
     const noti = new Noti({
@@ -213,26 +212,56 @@ exports.sendNoti = async (data, socket) => {
     });
 
     const toUser = await User.findOne({ _id: toId }).exec();
-    
+
     if (toUser.online) {
         socket.to(toUser.socketId).emit("UserSendNoti");
     }
 
     await noti.save(err => {
-        if(err) console.log(err);
+        if (err) console.log(err);
     });
 
 }
 
+exports.seenNoti = async (data,socket) => {
+    console.log(data);
+
+    const { notiId } = data;
+
+    await Noti.findOneAndUpdate({_id: notiId}, {seen: true}).exec();
+
+    socket.emit("UserUpdateNoti");
+}
+
+exports.unfriend = async (data,socket) => {
+    console.log(data);
+    const {fromId, toId} = data;
+
+    const user = await User.findOne({_id: fromId}).exec();
+
+    const newContact = user.contacts.filter(id => id !== toId);
+
+    await User.findOneAndUpdate({_id: fromId}, {contacts: newContact}).exec();
+
+    const user1 = await User.findOne({_id: toId}).exec();
+
+    const newContact1 = user1.contacts.filter(id => id !== fromId);
+
+    await User.findOneAndUpdate({_id: toId}, {contacts: newContact1}).exec();
+
+    await Conver.findOneAndDelete({ members: { $all: [fromId, toId] } }).exec();
+
+}
+
 async function updateLastMess(authorId, toId) {
-    const lastMess = await Message.findOne({ $or: [{ $and: [{ author: authorId }, { receive: toId }, { active: true }, {recall: false}] }, { $and: [{ author: toId }, { receive: authorId }, { active: true }, {recall: false}] }] }).sort({ _id: -1 }).exec();
+    const lastMess = await Message.findOne({ $or: [{ $and: [{ author: authorId }, { receive: toId }, { active: true }, { recall: false }] }, { $and: [{ author: toId }, { receive: authorId }, { active: true }, { recall: false }] }] }).sort({ _id: -1 }).exec();
     let content = "";
-    if(lastMess) {
+    if (lastMess) {
         content = lastMess.content
     }
     await Conver.findOneAndUpdate(
-        { members: {$all: [mongoose.Types.ObjectId(authorId), mongoose.Types.ObjectId(toId)]} },
+        { members: { $all: [mongoose.Types.ObjectId(authorId), mongoose.Types.ObjectId(toId)] } },
         {
             lastMess: content.split('\n')[content.split('\n').length - 1]
         }).exec();
-}   
+}

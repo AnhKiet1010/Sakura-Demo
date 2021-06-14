@@ -27,6 +27,8 @@ import { ReactComponent as ZoomIcon } from './zoom.svg';
 import { ReactComponent as BellIcon } from './bell.svg';
 import { ReactComponent as AddIcon } from './add.svg';
 import { ReactComponent as CheckedIcon } from './checked.svg';
+import { ReactComponent as SettingIcon } from './settings.svg';
+
 
 
 export {
@@ -58,5 +60,6 @@ export {
     ZoomIcon,
     BellIcon,
     AddIcon,
-    CheckedIcon
+    CheckedIcon,
+    SettingIcon
 }

@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore, {
     Navigation, Thumbs
 } from 'swiper/core';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // Import Swiper styles
 import "swiper/swiper.min.css";

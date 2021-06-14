@@ -78,20 +78,20 @@ exports.callbackClient = async (req, res) => {
             email: userInfo1.data.email
         });
 
-        const listFr = await User.find({}).exec();
-        console.log('list friends to conver', listFr);
+        // const listFr = await User.find({}).exec();
+        // console.log('list friends to conver', listFr);
 
-        listFr.forEach(async fr => {
-            let members = [];
-            members.push(user._id);
-            members.push(fr._id);
+        // listFr.forEach(async fr => {
+        //     let members = [];
+        //     members.push(user._id);
+        //     members.push(fr._id);
 
-            let newConver = new Conver({
-                members
-            });
+        //     let newConver = new Conver({
+        //         members
+        //     });
 
-            await newConver.save((err) => console.log(err));
-        });
+        //     await newConver.save((err) => console.log(err));
+        // });
 
 
         await user.save(err => {

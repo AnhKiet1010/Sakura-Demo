@@ -83,10 +83,22 @@ function ChatPage() {
             changeData();
         });
 
-        socket.on("UserSendNoti", () => {
-            updateNoti();
+        socket.on("UserSendNoti", async (data) => {
+            await updateNoti();
             let action = setHaveNoti(true);
             dispatch(action);
+        });
+
+        socket.on("UserAcceptNoti",async () => {
+            await updateNoti();
+            await updateListFriend();
+            let action = setHaveNoti(true);
+            dispatch(action);
+        });
+
+        socket.on("UserUpdateNoti",async () => {
+            await updateNoti();
+            await updateListFriend();
         });
 
         socket.on("ChangeMessStatusToSeen", (data) => {
@@ -157,14 +169,14 @@ function ChatPage() {
                 const { listMess, hasMoreTop, hasMoreBot } = res.data.data;
                 let action = setListMessages(listMess);
                 dispatch(action);
-                console.log('updating list mess', res.data.data);
+                // console.log('updating list mess', res.data.data);
                 setHasMoreTop(hasMoreTop);
                 setHasMoreBot(hasMoreBot);
             });
         setLoadingMess(false);
     }
 
-    function updateNoti() {
+     function updateNoti() {
         const body = { id: user.id };
 
         API.getNoti(body)
@@ -180,6 +192,7 @@ function ChatPage() {
                 if (res.data.error) {
                     toast.error(res.data.message);
                 } else {
+                    console.log("updatingggg list friends : ", res.data.data.listFriends);
                     let action = setListFriends(res.data.data.listFriends);
                     dispatch(action);
                 }

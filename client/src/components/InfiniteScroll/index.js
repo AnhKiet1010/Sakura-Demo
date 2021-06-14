@@ -35,7 +35,7 @@ function InfiniteScroll({ fetchMoreMess, hasMoreTop, hasMoreBot, loadingBottom, 
 
     return (
         <div className="w-full flex-1 flex px-4 pt-8 flex-col-reverse overflow-y-scroll overflow-x-hidden" id="scrollAbleDiv" onScroll={handleScroll}>
-            { typing.state && <div className="flex items-center bg-secondary -mx-4 px-3 max-w-max py-1 text-primary opacity-70 animate__animated animate__fadeIn">{currentUser.name} is typing<img src={TypingImg} alt="loading" className="w-10 h-6" /></div>}
+            { (typing.state && typing.id === currentUser._id ) && <div className="flex items-center bg-secondary -mx-4 px-3 max-w-max py-1 text-primary opacity-70 animate__animated animate__fadeIn">{currentUser.name} is typing<img src={TypingImg} alt="loading" className="w-10 h-6" /></div>}
             {limit === 15 && <div ref={messagesEndRef} className="" />}
             {
                 hasMoreBot && loadingBottom && <span className="text-primary opacity-75 py-4 flex  justify-center mx-auto items-center relative w-10 h-6">

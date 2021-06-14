@@ -30,19 +30,23 @@ exports.store = async (req, res) => {
 
 exports.getFriends = async (req, res) => {
     const { userId } = req.body;
-    const listFriends = await User.find({ _id: { $ne: userId } }).sort({ online: -1, lastActivity: -1 }).exec();
+    const user = await User.findOne({ _id: userId }).exec();
+    const listFriends = user.contacts;
 
     var result = [];
-    for (let i = 0; i < listFriends.length; i++) {
-        let fr = listFriends[i];
+    for(let i= 0; i < listFriends.length; i++ ) {
+        let fr = await User.findOne({ _id: listFriends[i] }).exec();
         let countUnReadMess = await Message.countDocuments({ $and: [{ author: fr._id }, { receive: userId }, { seen: false }] }).exec();
-        let conver = await Conver.findOne({ members: { $all: [mongoose.Types.ObjectId(userId), mongoose.Types.ObjectId(fr._id)] } }).exec();
-        let friendObj = {
-            friendData: fr,
-            unReadCount: countUnReadMess,
-            conver
-        };
-        result.push(friendObj);
+        let conver = await Conver.findOne({ members: { $all: [userId, listFriends[i]] } }).exec();
+        if (conver) {
+            let friendObj = {
+                friendData: fr,
+                unReadCount: countUnReadMess,
+                conver
+            };
+
+            result = [...result, friendObj];
+        }
     }
 
     res.status(200).json({
@@ -85,8 +89,7 @@ exports.getMessageById = async (req, res) => {
 
 exports.getImages = async (req, res) => {
     const { fromId, toId } = req.body;
-    console.log(req.body);
-    const listMess = await Message.find({ $or: [{ $and: [{ author: fromId }, { receive: toId }, { active: true }, {type: 'image'}] }, { $and: [{ author: toId }, { receive: fromId }, { active: true }, {type: 'image'}] }] }).sort({ _id: -1 }).exec();
+    const listMess = await Message.find({ $or: [{ $and: [{ author: fromId }, { receive: toId }, { active: true }, { type: 'image' }] }, { $and: [{ author: toId }, { receive: fromId }, { active: true }, { type: 'image' }] }] }).sort({ _id: -1 }).exec();
     var result = [];
     listMess.forEach(element => {
         result.push(element.img);
@@ -111,7 +114,7 @@ exports.postMessage = async (req, res) => {
         }
 
         images.map(async img => {
-            
+
             const message = new Message({
                 author: fromId,
                 receive: toId,
@@ -121,7 +124,7 @@ exports.postMessage = async (req, res) => {
                 time: moment(),
                 seen: false
             });
-    
+
             await message.save((err) => {
                 if (err) {
                     console.log(err);
@@ -235,14 +238,68 @@ exports.postMessage = async (req, res) => {
     }
 }
 
-exports.getListNoti = async (req,res) => {
-    const { id } =req.body;
+exports.getListNoti = async (req, res) => {
+    const { id } = req.body;
+
+    const listNoti = await Noti.find({ $and: [{ toId: id }, { seen: false }] });
+    let result = [];
+    for (let i = 0; i < listNoti.length; i++) {
+        const userInfo = await User.findOne({ _id: listNoti[i].fromId }).exec();
+        const newNoti = {
+            id: listNoti[i]._id,
+            fromUser: userInfo,
+            type: listNoti[i].type,
+            fromId: listNoti[i].fromId,
+            toId: listNoti[i].toId,
+        }
+        result.push(newNoti);
+    }
+
+    res.json({ listNoti: result });
+}
+
+exports.acceptNoti = async (req, res) => {
+    const io = req.app.get('io');
+
+    const { fromId, toId, notiId } = req.body;
     console.log(req.body);
 
-    const listNoti = await Noti.find({$and: [{toId: id}, {seen: false}]});
+    await Noti.findOneAndUpdate({ _id: notiId }, { seen: true }).exec();
+
+    const noti = new Noti({
+        fromId: toId,
+        toId: fromId,
+        type: "accept",
+    });
+
+    await noti.save(err => {
+        if (err) console.log(err);
+    });
+
+    let members = [];
+    members.push(fromId);
+    members.push(toId);
+
+    let newConver = new Conver({
+        members
+    });
+    await newConver.save((err) => console.log('err', err));
+
+    const user1 = await User.findOne({ _id: fromId }).exec();
+    const user2 = await User.findOne({ _id: toId }).exec();
+
+    const newContactsUser1 = [...user1.contacts, toId];
+    const newContactsUser2 = [...user2.contacts, fromId];
+
+    await User.findOneAndUpdate({ _id: fromId }, { contacts: newContactsUser1 }).exec();
+    await User.findOneAndUpdate({ _id: toId }, { contacts: newContactsUser2 }).exec();
+
+    
+
+    const listNoti = await Noti.find({ $and: [{ toId }, { seen: false }] });
     let result = [];
-    for(let i = 0; i < listNoti.length; i++ ) {
-        const userInfo = await User.findOne({_id: listNoti[i].fromId}).exec();
+    for (let i = 0; i < listNoti.length; i++) {
+        const userInfo = await User.findOne({ _id: listNoti[i].fromId }).exec();
         const newNoti = {
             fromUser: userInfo,
             type: listNoti[i].type,
@@ -250,6 +307,18 @@ exports.getListNoti = async (req,res) => {
         result.push(newNoti);
     }
 
-    res.json({listNoti: result});
+    const toUser = await User.findOne({ _id: fromId }).exec();
+    const fromUser = await User.findOne({ _id: toId }).exec();
+
+    if (toUser.online) {
+        io.to(toUser.socketId).emit("UserAcceptNoti");
+    }
+
+    if (fromUser.online) {
+        io.to(fromUser.socketId).emit("UserUpdateNoti");
+    }
+
+
+    res.json({ listNoti: result });
 
 }

@@ -37,7 +37,9 @@ const { channelSendMess,
     deleteMess,
     recallMess,
     searchFriend,
-    sendNoti
+    sendNoti,
+    seenNoti,
+    unfriend
 } = require("./controllers/socket.controller");
 
 io.on("connection", async socket => {
@@ -57,6 +59,8 @@ io.on("connection", async socket => {
     socket.on("UserRecallMess", data => recallMess(data,socket));
     socket.on("UserSearchFriend", data => searchFriend(data,socket));
     socket.on("UserSendRequestFriend", data => sendNoti(data,socket));
+    socket.on("UserSeenNoti", data => seenNoti(data,socket));
+    socket.on("UserUnfriend", data => unfriend(data,socket));
 
     socket.on("ChannelSendMess", data => channelSendMess(data, socket));
     socket.on("SearchMess", data => searchMess(data, socket));

@@ -2,22 +2,30 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { SearchIcon, MenuIcon } from '../../icons';
+import socket from '../../helpers/socketConnect';
+import handleInfoClickOutside from '../../helpers/handleInfoClickOutside';
 
 function Header({ handleSearchPress }) {
     const currentUser = useSelector(state => state.currentUser);
+    const user = useSelector(state => state.user);
     const [showSearchInput, setShowSearchInput] = useState(false);
     const keyword = useSelector(state => state.keyword);
     const [word, setWord] = useState(keyword);
+    const {infoRef, showInfo, setShowInfo } = handleInfoClickOutside(false);
 
     function handleWordChange(e) {
         setWord(e.target.value);
     }
 
+    function handleUnfriend() {
+        socket.emit("UserUnfriend", {fromId: user.id, toId: currentUser._id});
+    }
+
     return (
         <div className="w-full border-b-2 dark:border-gray-500 bg-primary text-primary flex px-5 items-center flex-none h-24 z-10">
             <div className={`flex absolute items-center`}>
-                <div className="mr-2 w-16 h-16 relative flex justify-center items-center rounded-full bg-gray-500 text-xl">
-                    <img src={currentUser.avatar} className={`rounded-full ${currentUser.online && "border border-green-500"} w-full h-full object-cover`} alt="avatar" />
+                <div className="mr-2 w-16 h-16 relative flex justify-center items-center rounded-full text-xl">
+                    <img src={currentUser.avatar} className={`rounded-full ${currentUser.online && "p-0.5 bg-green-500"} w-full h-full object-cover`} alt="avatar" />
                     {currentUser.online && <div className="absolute right-1 top-1 w-3 h-3 rounded-full bg-green-500 border" />}
                 </div>
                 <div className="flex flex-col">
@@ -38,31 +46,19 @@ function Header({ handleSearchPress }) {
                         <SearchIcon className="fill-current text-gray-500 h-4 w-4" />
                     </div>
                 </div>
-                <SearchIcon className={`fill-current text-secondary h-5 w-5 block ${showSearchInput && "hidden"} cursor-pointer`} onClick={() => setShowSearchInput(true)} />
+                <div className="relative z-10 block focus:outline-none">
+                    <SearchIcon className={`fill-current text-secondary h-5 w-5 block ${showSearchInput && "hidden"} cursor-pointer`} onClick={() => setShowSearchInput(true)} />
+                </div>
             </div>
-            <div className={`relative text-xl ml-4 text-primary focus:outline-none hover:opacity-100`}>
-                <div className="relative z-10 block rounded-md bg-secondary p-2 focus:outline-none">
-                    <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+            <div className={`relative text-xl ml-4 text-primary focus:outline-none hover:opacity-100`} ref={infoRef}>
+                <div className={`relative z-10 block focus:outline-none hover:opacity-50 focus:opacity-50 cursor-pointer rounded-lg p-2 ${showInfo && "bg-secondary"}`} onClick={() => setShowInfo(true)}>
+                    <MenuIcon className="h-5 w-5 text-primary fill-current" />
                 </div>
 
-                <div className="absolute right-0 mt-2 py-2 w-48 bg-secondary rounded-md shadow-xl z-20">
-                    <a href="#" className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
-                        your profile
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
-                        Your projects
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
-                        Help
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
-                        Settings
-                    </a>
-                    <a href="#" className="block px-4 py-2 text-sm capitalize text-primary hover:bg-primary hover:text-secondary">
-                        Sign Out
-                    </a>
+                <div className={`absolute right-0 mt-2 py-2 w-48 bg-secondary rounded-md shadow-xl z-20 header ${!showInfo && "hidden"}`}>
+                    <div className="block px-4 py-2 text-sm capitalize text-red-600 hover:bg-primary hover:text-secondary cursor-pointer" onClick={handleUnfriend}>
+                        <span className="text-red-600 mr-2">🚫</span>Unfriend
+                    </div>
                 </div>
 
             </div>

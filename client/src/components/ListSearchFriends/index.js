@@ -7,6 +7,7 @@ function ListFriends({onFriendClick}) {
     return (
         <>
         {
+            listSearchFriends.length > 0 ?
             listSearchFriends.map((friend, i) => {
                 return (
                     <FriendItem
@@ -19,7 +20,7 @@ function ListFriends({onFriendClick}) {
                         frId={friend._id}
                     />
                 );
-            })
+            }) : <div className="text-center text-sm italic opacity-70">No Friends Match</div>
         }
         </>
     );
