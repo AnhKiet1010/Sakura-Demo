@@ -17,12 +17,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import API from '../api/API';
 import { setListNoti } from '../slices/listNotiSlice';
 import handleMenuClickOutside from '../helpers/handleMenuClickOutside';
+import handleSearchFrClickOutside from '../helpers/handleSearchFrClickOutside';
 
-function ChatPageLeft({ setTheme, isDark, loadingFr, onFriendClick, showLeft }) {
+
+function ChatPageLeft({ setTheme, isDark, loadingFr, onFriendClick, showLeft, setShowProfile }) {
     const history = useHistory();
     const user = useSelector(state => state.user);
     const [searchFriend, setSearchFriend] = useState("");
-    const [searchingFriend, setSearchingFriend] = useState(false);
+    const {searchFrRef, searchingFriend, setSearchingFriend } = handleSearchFrClickOutside(false);
     const listNoti = useSelector(state => state.listNoti);
     const [checkedNoti, setCheckedNoti] = useState(false);
     const { notiRef, showNoti, setShowNoti } = handleNotiClickOutside(false);
@@ -131,24 +133,24 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, onFriendClick, showLeft }) 
                         </div>
 
                         <div className={`text-primary focus:outline-none hover:opacity-100 cursor-pointer`} ref={menuRef}>
-                            <div className="relative block p-2 bg-primary rounded-lg focus:outline-none hover:opacity-50" onClick={() => setShowMenu(true)}>
+                            <div className={`relative block p-2 bg-primary rounded-lg focus:outline-none hover:opacity-50 ${showMenu && "opacity-50"}`} onClick={() => setShowMenu(true)}>
                                 <SettingIcon className="h-5 w-5 text-primary fill-current" />
                             </div>
 
                             <div className={`absolute right-4 mt-2 py-2 w-48 bg-primary rounded-md shadow-xl z-20 header ${!showMenu && "hidden"} animate__animated  animate__fadeIn animate__faster`}>
-                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
+                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:opacity-50" onClick={() => setShowProfile(true)}>
                                     your profile
                                 </div>
-                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
+                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:opacity-50">
                                     Your projects
                                 </div>
-                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
+                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:opacity-50">
                                     Help
                                 </div>
-                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:text-secondary">
+                                <div className="block px-4 py-2 text-sm border-b capitalize text-primary hover:bg-primary hover:opacity-50">
                                     Settings
                                 </div>
-                                <div className="block px-4 py-2 text-sm capitalize text-primary hover:bg-primary hover:text-secondary">
+                                <div className="block px-4 py-2 text-sm capitalize text-primary hover:bg-primary hover:opacity-50">
                                     Sign Out
                                 </div>
                             </div>
@@ -158,7 +160,7 @@ function ChatPageLeft({ setTheme, isDark, loadingFr, onFriendClick, showLeft }) 
                 </div>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-8" ref={searchFrRef}>
                 <div className="px-4 mb-2 text-white flex justify-between items-center">
                     <div className="relative w-full">
                         <input

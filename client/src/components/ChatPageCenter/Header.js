@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { SearchIcon, MenuIcon } from '../../icons';
+import { SearchIcon, MenuIcon, DonotIcon, PhoneIcon, FacetimeIcon } from '../../icons';
 import socket from '../../helpers/socketConnect';
 import handleInfoClickOutside from '../../helpers/handleInfoClickOutside';
 
@@ -11,14 +11,14 @@ function Header({ handleSearchPress }) {
     const [showSearchInput, setShowSearchInput] = useState(false);
     const keyword = useSelector(state => state.keyword);
     const [word, setWord] = useState(keyword);
-    const {infoRef, showInfo, setShowInfo } = handleInfoClickOutside(false);
+    const { infoRef, showInfo, setShowInfo } = handleInfoClickOutside(false);
 
     function handleWordChange(e) {
         setWord(e.target.value);
     }
 
     function handleUnfriend() {
-        socket.emit("UserUnfriend", {fromId: user.id, toId: currentUser._id});
+        socket.emit("UserUnfriend", { fromId: user.id, toId: currentUser._id });
     }
 
     return (
@@ -56,8 +56,14 @@ function Header({ handleSearchPress }) {
                 </div>
 
                 <div className={`absolute right-0 mt-2 py-2 w-48 bg-secondary rounded-md shadow-xl z-20 header ${!showInfo && "hidden"}`}>
-                    <div className="block px-4 py-2 text-sm capitalize text-red-600 hover:bg-primary hover:text-secondary cursor-pointer" onClick={handleUnfriend}>
-                        <span className="text-red-600 mr-2">🚫</span>Unfriend
+                    <div className="flex items-center px-4 py-2 text-sm capitalize text-primary border-b hover:bg-primary hover:text-secondary cursor-pointer">
+                        <span className="mr-2"><PhoneIcon className="w-4 h-4 fill-current" /></span>Call
+                    </div>
+                    <div className="flex items-center px-4 py-2 text-sm capitalize text-primary border-b hover:bg-primary hover:text-secondary cursor-pointer">
+                        <span className="mr-2"><FacetimeIcon className="w-4 h-4 fill-current" /></span>Call video
+                    </div>
+                    <div className="flex items-center px-4 py-2 text-sm capitalize text-red-600 hover:bg-primary hover:text-secondary cursor-pointer" onClick={handleUnfriend}>
+                        <span className="text-red-600 mr-2"><DonotIcon className="w-4 h-4 fill-current" /></span>Unfriend
                     </div>
                 </div>
 

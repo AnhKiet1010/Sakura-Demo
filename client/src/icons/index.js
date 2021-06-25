@@ -28,10 +28,16 @@ import { ReactComponent as BellIcon } from './bell.svg';
 import { ReactComponent as AddIcon } from './add.svg';
 import { ReactComponent as CheckedIcon } from './checked.svg';
 import { ReactComponent as SettingIcon } from './settings.svg';
+import { ReactComponent as DonotIcon } from './do-not.svg';
+import { ReactComponent as PhoneIcon } from './phone.svg';
+import { ReactComponent as FacetimeIcon } from './video-call.svg';
 
 
 
 export {
+    DonotIcon,
+    PhoneIcon,
+    FacetimeIcon,
     LightIcon,
     DarkIcon,
     PlusIcon,

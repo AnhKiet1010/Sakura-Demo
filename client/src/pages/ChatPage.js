@@ -89,14 +89,14 @@ function ChatPage() {
             dispatch(action);
         });
 
-        socket.on("UserAcceptNoti",async () => {
+        socket.on("UserAcceptNoti", async () => {
             await updateNoti();
             await updateListFriend();
             let action = setHaveNoti(true);
             dispatch(action);
         });
 
-        socket.on("UserUpdateNoti",async () => {
+        socket.on("UserUpdateNoti", async () => {
             await updateNoti();
             await updateListFriend();
         });
@@ -176,14 +176,14 @@ function ChatPage() {
         setLoadingMess(false);
     }
 
-     function updateNoti() {
+    function updateNoti() {
         const body = { id: user.id };
 
         API.getNoti(body)
-        .then(res => {
-            let action = setListNoti(res.data.listNoti);
-            dispatch(action);
-        }).catch(err => console.log(err));
+            .then(res => {
+                let action = setListNoti(res.data.listNoti);
+                dispatch(action);
+            }).catch(err => console.log(err));
     }
 
     function updateListFriend() {
@@ -318,6 +318,7 @@ function ChatPage() {
                 onFriendClick={onFriendClick}
                 showLeft={showLeft}
                 setShowLeft={setShowLeft}
+                setShowProfile={setShowProfile}
             />
             <MessFilterPopup
                 showListFilterMess={showListFilterMess}
@@ -335,7 +336,6 @@ function ChatPage() {
             />
             <ChatPageCenter
                 handleSearchPress={handleSearchPress}
-                refProfile={refProfile}
                 hasMoreTop={hasMoreTop}
                 hasMoreBot={hasMoreBot}
                 loadingMess={loadingMess}
@@ -344,7 +344,9 @@ function ChatPage() {
                 setLimit={setLimit}
                 skip={skip}
                 setSkip={setSkip}
+                refProfile={refProfile}
                 showProfile={showProfile}
+                setShowProfile={setShowProfile}
             />
         </div>
     )
