@@ -18,13 +18,13 @@ module.exports = {
     },
   },
   variants: {
-    extend: {
-      textOpacity: ['dark'],
-      opacity: ['disabled'],
-      backdropBlur: {
-        xs: '2px',
-      }
-    }
+    // extend: {
+    //   textOpacity: ['dark'],
+    //   opacity: ['disabled'],
+    //   backdropBlur: {
+    //     xs: '2px',
+    //   }
+    // }
   },
   plugins: [],
 }

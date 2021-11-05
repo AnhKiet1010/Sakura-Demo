@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import Aos from 'aos';
 import 'react-toastify/dist/ReactToastify.css';
@@ -186,7 +186,7 @@ function ChatPage() {
             }).catch(err => console.log(err));
     }
 
-    function updateListFriend() {
+    const  updateListFriend = useCallback(() => {
         API.getListFriend({ userId: user.id })
             .then(res => {
                 if (res.data.error) {
@@ -200,7 +200,7 @@ function ChatPage() {
                 console.log(err);
             })
         setLoadingFr(false);
-    }
+    }, []);
 
     function handleSearchPress(e) {
         setWord(e.target.value);
